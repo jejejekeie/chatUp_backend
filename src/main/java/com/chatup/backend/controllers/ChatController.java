@@ -7,6 +7,8 @@ import com.chatup.backend.models.User;
 import com.chatup.backend.services.ChatService;
 import com.chatup.backend.services.MensajeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -20,12 +22,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatController {
     private final SimpMessagingTemplate messagingTemplate;
-    private final MensajeService chatMessageService;
+    private final MensajeService messageService;
     private final ChatService chatService;
 
     @MessageMapping("/chat")
     public void processMessage(Mensaje chatMensaje) {
-        Mensaje msjGuardado = chatMessageService.save(chatMensaje);
+        Mensaje msjGuardado = messageService.save(chatMensaje);
         messagingTemplate.convertAndSendToUser(
                 chatMensaje.getSender(), "/queue/messages",
                 msjGuardado
@@ -34,15 +36,25 @@ public class ChatController {
 
     @MessageMapping("/chat/{chatId}")
     public void processMessage(@DestinationVariable String chatId, Mensaje chatMensaje) {
-        Mensaje msjGuardado = chatMessageService.save(chatMensaje);
+        Mensaje msjGuardado = messageService.save(chatMensaje);
         messagingTemplate.convertAndSend("/topic/chat/" + chatId, msjGuardado);
     }
+
+    @GetMapping("/mensajes/{chatId}/{page}/{size}")
+    public ResponseEntity<List<Mensaje>> getMensajesChatPaginated(
+            @PathVariable String chatId,
+            @PathVariable int page,
+            @PathVariable int size) {
+        Page<Mensaje> mensajes = messageService.findMensajesChatPageable(chatId, page, size);
+        return ResponseEntity.ok(mensajes.getContent());
+    }
+
 
     @GetMapping("/mensajes/{chatId}")
     public ResponseEntity<List<Mensaje>> getMensajesChat(
             @PathVariable String chatId
     ) {
-        return ResponseEntity.ok(chatMessageService.findMensajesChat(chatId));
+        return ResponseEntity.ok(messageService.findMensajesChat(chatId));
     }
 
     @PostMapping("/chats")

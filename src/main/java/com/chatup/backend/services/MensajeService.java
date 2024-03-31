@@ -2,6 +2,8 @@ package com.chatup.backend.services;
 
 import com.chatup.backend.models.Mensaje;
 import com.chatup.backend.repositories.MensajeRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,6 +29,10 @@ public class MensajeService {
         mensaje.setChatId(chatId);
         mensajeRepository.save(mensaje);
         return mensaje;
+    }
+
+    public Page<Mensaje> findMensajesChatPageable(String chatId, int page, int size) {
+        return mensajeRepository.findByChatIdOrderByTimestampDesc(chatId, PageRequest.of(page, size));
     }
 
     public List<Mensaje> findMensajesChat(String chatId) {
