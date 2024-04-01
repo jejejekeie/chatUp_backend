@@ -3,6 +3,7 @@ package com.chatup.backend.controllers;
 import com.chatup.backend.repositories.UserRepository;
 import com.chatup.backend.models.User;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,6 +23,7 @@ public class UserController {
         this.userRepository = userRepository;
     }
 
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/delete/{email}")
     public ResponseEntity<?> deleteUser(@PathVariable String email) {
         if (email == null || email.isEmpty()) {
@@ -37,6 +39,7 @@ public class UserController {
         return ResponseEntity.ok("User deleted successfully");
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/update/{email}")
     public ResponseEntity<?> updateUser(@RequestParam("username") String username, @RequestParam("fotoPerfil") MultipartFile fotoPerfil, @PathVariable String email) {
         if (email == null) {
@@ -51,6 +54,7 @@ public class UserController {
         }
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/info/{email}")
     public ResponseEntity<?> getUser(@PathVariable String email) {
         if (email == null || email.isEmpty()) {
@@ -62,11 +66,13 @@ public class UserController {
         }
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/users")
     public ResponseEntity<?> getUsers() {
         return ResponseEntity.ok(userRepository.findAll());
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/addContact")
     public ResponseEntity<?> AddContact(@RequestParam("userEmail") String userEmail, @RequestParam("contactsEmail") String contactEmail) {
         if (userEmail == null || contactEmail == null) {
@@ -85,6 +91,7 @@ public class UserController {
         return ResponseEntity.ok("Contact added successfully");
     }
 
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/deleteContact/")
     public ResponseEntity<?> DeleteContact(@RequestParam("contactEmail") String contactEmail, @RequestParam("userEmail") String userEmail) {
         if (userEmail == null || contactEmail == null) {
@@ -103,6 +110,7 @@ public class UserController {
         return ResponseEntity.ok("Contact deleted successfully");
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/contacts/{email}")
     public ResponseEntity<?> getContacts(@PathVariable String email) {
         if (email == null) {

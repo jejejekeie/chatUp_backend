@@ -14,13 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.awt.*;
 import java.util.Arrays;
 import java.util.List;
 
@@ -35,6 +34,7 @@ public class ChatController {
     @Value("${file.upload-allowed-mimetypes}")
     private String[] allowedMimeTypes;
 
+    @PreAuthorize("isAuthenticated()")
     @MessageMapping("/chat")
     public void processMessage(Mensaje chatMensaje) {
         Mensaje msjGuardado = messageService.save(chatMensaje);
@@ -44,12 +44,14 @@ public class ChatController {
         );
     }
 
+    @PreAuthorize("isAuthenticated()")
     @MessageMapping("/chat/{chatId}")
     public void processMessage(@DestinationVariable String chatId, Mensaje chatMensaje) {
         Mensaje msjGuardado = messageService.save(chatMensaje);
         messagingTemplate.convertAndSend("/topic/chat/" + chatId, msjGuardado);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/mensajes/{chatId}/{page}/{size}")
     public ResponseEntity<List<Mensaje>> getMensajesChatPaginated(
             @PathVariable String chatId,
@@ -59,7 +61,7 @@ public class ChatController {
         return ResponseEntity.ok(mensajes.getContent());
     }
 
-
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/mensajes/{chatId}")
     public ResponseEntity<List<Mensaje>> getMensajesChat(
             @PathVariable String chatId
@@ -67,6 +69,7 @@ public class ChatController {
         return ResponseEntity.ok(messageService.findMensajesChat(chatId));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/chats")
     public ResponseEntity<Chat> createChat(@RequestBody ChatCreationRequest request) {
         Chat chat = Chat.builder()
@@ -77,6 +80,7 @@ public class ChatController {
         return ResponseEntity.ok(chatService.createChat(chat));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PostMapping("/uploadImage")
     public ResponseEntity<String> uploadImage(@RequestParam("image") MultipartFile image) {
         if (!isMimeTypeAllowed(image.getContentType())) {
@@ -90,13 +94,14 @@ public class ChatController {
         }
     }
 
-    @GetMapping("/chats/{userId}")
-    public ResponseEntity<List<Chat>> getChatsByUserId(
-            @PathVariable String userId
-    ) {
-        return ResponseEntity.ok(chatService.getChatsByUserId(userId));
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/chats/user/{email}")
+    public ResponseEntity<List<Chat>> getChatsByUserEmail(@PathVariable String email) {
+        List<Chat> chats = chatService.getChatsByMemberEmail(email);
+        return ResponseEntity.ok(chats);
     }
 
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/chats/{chatId}/addUser")
     public ResponseEntity<Chat> addUserToChat(
             @PathVariable String chatId,
@@ -105,6 +110,7 @@ public class ChatController {
         return ResponseEntity.ok(chatService.addUserToChat(chatId, userId));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/chats/{chatId}/removeUser/{userId}")
     public ResponseEntity<Chat> removeUserFromChat(
             @PathVariable String chatId,
@@ -113,6 +119,7 @@ public class ChatController {
         return ResponseEntity.ok(chatService.removeUserFromChat(chatId, userId));
     }
 
+    @PreAuthorize("isAuthenticated()")
     @GetMapping("/chats/{chatId}/members")
     public ResponseEntity<List<User>> getChatMembers(@PathVariable String chatId) {
         return ResponseEntity.ok(chatService.getChatMembers(chatId));

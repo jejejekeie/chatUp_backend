@@ -3,17 +3,18 @@ package com.chatup.backend.services;
 import com.chatup.backend.models.Chat;
 import com.chatup.backend.models.User;
 import com.chatup.backend.repositories.ChatRepository;
+import com.chatup.backend.repositories.UserRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class ChatService {
     private final ChatRepository chatRepository;
-    public ChatService(ChatRepository chatRepository) {
+    private final UserRepository userRepository;
+    public ChatService(ChatRepository chatRepository, UserRepository userRepository) {
         this.chatRepository = chatRepository;
+        this.userRepository = userRepository;
     }
 
     public Optional<String> getChatId (
@@ -33,33 +34,25 @@ public class ChatService {
                 });
     }
 
-    public List<Chat> getChatsByUserId(String userId) {
-        return chatRepository.findChatsByUserId(userId);
+    public List<Chat> getChatsByMemberEmail(String email) {
+        return chatRepository.findChatsByMember(email);
     }
 
     private String createChatId(Set<String> members) {
-        var chatId = String.format("%s_%s", members.toArray());
-
-        Chat senderRecipient = Chat
-                .builder()
+        List<String> sortedMembers = new ArrayList<>(members);
+        Collections.sort(sortedMembers);
+        String chatId = String.join("-", sortedMembers);
+        Chat chat = Chat.builder()
                 .chatId(chatId)
-                .members(members)
+                .members(new HashSet<>(sortedMembers))
                 .build();
-
-        Chat recipientSender = Chat
-                .builder()
-                .chatId(chatId)
-                .members(Set.of(members.toArray()[1].toString()))
-                .build();
-
-        chatRepository.save(senderRecipient);
-        chatRepository.save(recipientSender);
-
         return chatId;
     }
 
     public Chat addUserToChat(String chatId, String userId) {
-        Chat chat = chatRepository.findChatById(chatId).orElseThrow();
+        Chat chat = chatRepository.findChatById(chatId).orElseThrow(
+                () -> new IllegalArgumentException("Chat not found")
+        );
         chat.getMembers().add(userId);
         return chatRepository.save(chat);
     }
@@ -71,7 +64,8 @@ public class ChatService {
     }
 
     public List<User> getChatMembers(String chatId) {
-        return chatRepository.findChatMembers(chatId);
+        Set<String> members = chatRepository.findChatById(chatId).orElseThrow().getMembers();
+        return userRepository.findUsersByEmail(members);
     }
 
     public Chat createChat(Chat chat) {
