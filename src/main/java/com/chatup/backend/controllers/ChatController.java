@@ -22,6 +22,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 @Controller
 @RequiredArgsConstructor
@@ -72,12 +73,19 @@ public class ChatController {
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/chats")
     public ResponseEntity<Chat> createChat(@RequestBody ChatCreationRequest request) {
+        if (!membersAreValid(request.getMembers())) {
+            ResponseEntity.badRequest().body("Lista de miembros inválida.");
+        }
         Chat chat = Chat.builder()
                 .name(request.getChatName())
                 .members(request.getMembers())
                 .chatType(request.getChatType())
                 .build();
         return ResponseEntity.ok(chatService.createChat(chat));
+    }
+
+    private boolean membersAreValid(Set<String> members) {
+        return members != null && members.size() > 1;
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -95,9 +103,9 @@ public class ChatController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/chats/user/{email}")
-    public ResponseEntity<List<Chat>> getChatsByUserEmail(@PathVariable String email) {
-        List<Chat> chats = chatService.getChatsByMemberEmail(email);
+    @GetMapping("/chats/user/{userId}")
+    public ResponseEntity<List<Chat>> getChatsByUser(@PathVariable String userId) {
+        List<Chat> chats = chatService.getChatsByMemberId(userId);
         return ResponseEntity.ok(chats);
     }
 
@@ -105,7 +113,7 @@ public class ChatController {
     @PutMapping("/chats/{chatId}/addUser")
     public ResponseEntity<Chat> addUserToChat(
             @PathVariable String chatId,
-            String userId
+            @RequestBody String userId
     ) {
         return ResponseEntity.ok(chatService.addUserToChat(chatId, userId));
     }

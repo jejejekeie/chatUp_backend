@@ -9,6 +9,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Document(collection = "Usuario")
@@ -25,7 +26,7 @@ public class User {
     private Date lastAccess;
     private Set<String> contacts = new HashSet<>();
 
-    public User() {
+    public User(User userDb) {
         this.authorities = "ROLE_USER";
         this.status = "ACTIVE";
         this.lastAccess = new Date();

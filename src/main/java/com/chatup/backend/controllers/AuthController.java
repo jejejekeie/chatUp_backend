@@ -69,17 +69,6 @@ public class AuthController {
         final String jwt = jwtTokenUtil.generateToken(userDetails);
 
         return ResponseEntity.ok(new AuthenticationResponse(jwt));
-        /*
-        if(userRepository.findByEmail(authenticationRequest.getEmail()).isEmpty()) {
-            return ResponseEntity.badRequest().body("User not found");
-        }
-        User user = userRepository.findByEmail(authenticationRequest.getEmail()).get();
-        if(passwordEncoder.matches(authenticationRequest.getPassword(), user.getHashPassword())) {
-            return ResponseEntity.ok("User logged in successfully");
-        } else {
-            return ResponseEntity.badRequest().body("Incorrect password");
-        }
-         */
     }
 
     @PostMapping("/password/{email}")

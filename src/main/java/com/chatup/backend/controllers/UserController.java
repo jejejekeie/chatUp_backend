@@ -1,5 +1,6 @@
 package com.chatup.backend.controllers;
 
+import com.chatup.backend.dtos.UserDTO;
 import com.chatup.backend.repositories.UserRepository;
 import com.chatup.backend.models.User;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +12,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -24,13 +27,13 @@ public class UserController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("/delete/{email}")
-    public ResponseEntity<?> deleteUser(@PathVariable String email) {
-        if (email == null || email.isEmpty()) {
+    @DeleteMapping("/delete/{userId}")
+    public ResponseEntity<?> deleteUser(@PathVariable String userId) {
+        if (userId == null || userId.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid request: email is null");
         }
 
-        Optional<User> userOptional = userRepository.findByEmail(email);
+        Optional<User> userOptional = userRepository.findById(userId);
         if (!userOptional.isPresent()) {
             return ResponseEntity.notFound().build();
         }
@@ -40,36 +43,53 @@ public class UserController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PutMapping("/update/{email}")
-    public ResponseEntity<?> updateUser(@RequestParam("username") String username, @RequestParam("fotoPerfil") MultipartFile fotoPerfil, @PathVariable String email) {
-        if (email == null) {
-            return ResponseEntity.badRequest().body("User not found");
+    @PutMapping("/update/{userId}")
+    public ResponseEntity<?> updateUser(
+            @RequestParam("username") String username,
+            @RequestParam("fotoPerfil") MultipartFile fotoPerfil,
+            @RequestParam("email") String email,
+            @PathVariable String userId) {
+        Optional<User> userOptional = userRepository.findById(userId);
+        if (!userOptional.isPresent()) {
+            return ResponseEntity.notFound().build();
         } else {
-            String fileName = StoreProfilePicture(fotoPerfil);
-            userRepository.save(User.builder()
-                .username(username)
-                .fotoPerfil(fileName)
-                .build());
-        return ResponseEntity.ok("User updated successfully");
+            User user = userOptional.get();
+            user.setUsername(username);
+            user.setEmail(email);
+            user.setFotoPerfil(StoreProfilePicture(fotoPerfil));
+            userRepository.save(user);
+            return ResponseEntity.ok("User updated successfully");
         }
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/info/{email}")
-    public ResponseEntity<?> getUser(@PathVariable String email) {
-        if (email == null || email.isEmpty()) {
-            return ResponseEntity.badRequest().body("Invalid request: email is null");
-        } else if (userRepository.findByEmail(email).isEmpty()) {
+    @GetMapping("/info/{userId}")
+    public ResponseEntity<?> getUser(@PathVariable String userId, User user) {
+        if (userId == null || userId.isEmpty()) {
+            return ResponseEntity.badRequest().body("Invalid request: userI is null");
+        } else if (userRepository.findById(userId).isEmpty()) {
             return ResponseEntity.notFound().build();
         } else {
-            return ResponseEntity.ok(userRepository.findByEmail(email));
+            User userDb = userRepository.findById(userId).get();
+            return ResponseEntity.ok(new User(userDb));
         }
     }
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/users")
     public ResponseEntity<?> getUsers() {
-        return ResponseEntity.ok(userRepository.findAll());
+        List<User> users = userRepository.findAll();
+        List<UserDTO> userDTOS = new ArrayList<>();
+        for (User user : users) {
+            UserDTO dto = UserDTO.builder()
+                    .username(user.getUsername())
+                    .email(user.getEmail())
+                    .fotoPerfil(user.getFotoPerfil())
+                    .status(user.getStatus())
+                    .build();
+            userDTOS.add(dto);
+        }
+        return ResponseEntity.ok(userDTOS);
     }
 
     @PreAuthorize("isAuthenticated()")

@@ -34,8 +34,8 @@ public class ChatService {
                 });
     }
 
-    public List<Chat> getChatsByMemberEmail(String email) {
-        return chatRepository.findChatsByMember(email);
+    public List<Chat> getChatsByMemberId(String memberId) {
+        return chatRepository.findChatsByMemberId(memberId);
     }
 
     private String createChatId(Set<String> members) {

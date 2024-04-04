@@ -9,7 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Builder
 @Getter
 @Setter
-@Document(collection = "users")
+@Document(collection = "Usuario")
 public class UpdateUserDTO {
     String username;
     String status;

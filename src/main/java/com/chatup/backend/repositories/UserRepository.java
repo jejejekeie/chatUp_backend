@@ -11,6 +11,8 @@ import java.util.Set;
 @Repository
 public interface UserRepository extends MongoRepository<User, String> {
     Optional<User> findByEmail(String email);
+    @Override
+    Optional<User> findById(String id);
     List<User> findUsersByEmail(Set<String> email);
 
 }
