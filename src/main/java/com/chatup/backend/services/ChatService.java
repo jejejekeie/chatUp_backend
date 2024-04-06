@@ -75,4 +75,8 @@ public class ChatService {
     public List<Chat> findChatsByName(String chatName) {
         return chatRepository.findChatsByName(chatName);
     }
+
+    public Object getUserById(String memberId) {
+        return userRepository.findUserByEmail(memberId).orElseThrow();
+    }
 }
