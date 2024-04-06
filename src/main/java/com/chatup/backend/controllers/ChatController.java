@@ -5,6 +5,7 @@ import com.chatup.backend.models.Chat;
 import com.chatup.backend.models.ChatCreationRequest;
 import com.chatup.backend.models.Mensaje;
 import com.chatup.backend.models.User;
+import com.chatup.backend.repositories.UserRepository;
 import com.chatup.backend.services.ChatService;
 import com.chatup.backend.services.ImageService;
 import com.chatup.backend.services.MensajeService;
@@ -21,10 +22,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @Controller
 @RequiredArgsConstructor
@@ -33,6 +31,7 @@ public class ChatController {
     private final MensajeService messageService;
     private final ChatService chatService;
     private final ImageService imageService;
+    private final UserRepository userRepository;
 
     @Value("${file.upload-allowed-mimetypes}")
     private String[] allowedMimeTypes;
@@ -74,16 +73,20 @@ public class ChatController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/chats")
-    public ResponseEntity<Chat> createChat(@RequestBody ChatCreationRequest request) {
+    public ResponseEntity<?> createChat(@RequestBody ChatCreationRequest request) {
         if (!membersAreValid(request.getMembers())) {
-            ResponseEntity.badRequest().body("Lista de miembros inválida.");
+            return ResponseEntity.badRequest().body("No se puede crear un chat con un solo miembro.");
         }
+
         Chat chat = Chat.builder()
+                .chatId(UUID.randomUUID().toString())
                 .name(request.getChatName())
                 .members(request.getMembers())
                 .chatType(request.getChatType())
                 .build();
-        return ResponseEntity.ok(chatService.createChat(chat));
+
+        Chat savedChat = chatService.createChat(chat);
+        return ResponseEntity.ok(savedChat);
     }
 
     private boolean membersAreValid(Set<String> members) {
