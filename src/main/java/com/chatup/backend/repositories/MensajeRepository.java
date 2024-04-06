@@ -11,4 +11,5 @@ public interface MensajeRepository extends MongoRepository<Mensaje, String> {
     List<Mensaje> findByChatId(String chatId);
     Page<Mensaje> findByChatIdOrderByTimestampDesc(String chatId, Pageable pageable);
 
+    Mensaje findFirstByChatIdOrderByTimestampDesc(String id);
 }

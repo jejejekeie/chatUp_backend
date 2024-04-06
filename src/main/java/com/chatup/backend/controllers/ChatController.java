@@ -1,5 +1,6 @@
 package com.chatup.backend.controllers;
 
+import com.chatup.backend.dtos.ChatPreviewDTO;
 import com.chatup.backend.models.Chat;
 import com.chatup.backend.models.ChatCreationRequest;
 import com.chatup.backend.models.Mensaje;
@@ -20,6 +21,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
@@ -109,6 +111,29 @@ public class ChatController {
         return ResponseEntity.ok(chats);
     }
 
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/chats/previews")
+    public ResponseEntity<List<ChatPreviewDTO>> getChatPreviews(@RequestBody String userId) {
+        try {
+            List<Chat> chats = chatService.getChatsByMemberId(userId);
+            List<ChatPreviewDTO> chatPreviews = new ArrayList<>();
+
+            for (Chat chat : chats) {
+                Mensaje lastMessage = messageService.findLastMessageByChatId(chat.getId());
+                ChatPreviewDTO chatPreview = new ChatPreviewDTO(
+                        chat.getChatId(),
+                        chat.getName(),
+                        chat.getMembers(),
+                        chat.getChatType(),
+                        lastMessage
+                );
+                chatPreviews.add(chatPreview);
+            }
+            return ResponseEntity.ok(chatPreviews);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
 
     @PreAuthorize("isAuthenticated()")
     @PutMapping("/chats/{chatId}/addUser")

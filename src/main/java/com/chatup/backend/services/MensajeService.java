@@ -38,4 +38,8 @@ public class MensajeService {
     public List<Mensaje> findMensajesChat(String chatId) {
         return mensajeRepository.findByChatId(chatId);
     }
+
+    public Mensaje findLastMessageByChatId(String id) {
+        return mensajeRepository.findFirstByChatIdOrderByTimestampDesc(id);
+    }
 }
