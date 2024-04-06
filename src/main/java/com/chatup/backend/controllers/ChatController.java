@@ -109,6 +109,7 @@ public class ChatController {
         return ResponseEntity.ok(chats);
     }
 
+
     @PreAuthorize("isAuthenticated()")
     @PutMapping("/chats/{chatId}/addUser")
     public ResponseEntity<Chat> addUserToChat(

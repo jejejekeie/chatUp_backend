@@ -27,42 +27,6 @@ public class UserController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("/delete/{userId}")
-    public ResponseEntity<?> deleteUser(@PathVariable String userId) {
-        if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.badRequest().body("Invalid request: email is null");
-        }
-
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (!userOptional.isPresent()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        userRepository.delete(userOptional.get());
-        return ResponseEntity.ok("User deleted successfully");
-    }
-
-    @PreAuthorize("isAuthenticated()")
-    @PutMapping("/update/{userId}")
-    public ResponseEntity<?> updateUser(
-            @RequestParam("username") String username,
-            @RequestParam("fotoPerfil") MultipartFile fotoPerfil,
-            @RequestParam("email") String email,
-            @PathVariable String userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (!userOptional.isPresent()) {
-            return ResponseEntity.notFound().build();
-        } else {
-            User user = userOptional.get();
-            user.setUsername(username);
-            user.setEmail(email);
-            user.setFotoPerfil(StoreProfilePicture(fotoPerfil));
-            userRepository.save(user);
-            return ResponseEntity.ok("User updated successfully");
-        }
-    }
-
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/info/{userId}")
     public ResponseEntity<?> getUser(@PathVariable String userId, User user) {
         if (userId == null || userId.isEmpty()) {
@@ -138,20 +102,6 @@ public class UserController {
         } else {
             User user = userRepository.findByEmail(email).get();
             return ResponseEntity.ok(user.getContacts());
-        }
-    }
-
-    private String StoreProfilePicture(MultipartFile fotoPerfil) {
-        if (fotoPerfil.isEmpty()) {
-            return "";
-        }
-        try {
-            Path path = Paths.get("src/main/resources/static/images/profile");
-            Files.copy(fotoPerfil.getInputStream(), path.resolve(Objects.requireNonNull(fotoPerfil.getOriginalFilename())));
-            return fotoPerfil.getOriginalFilename();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return "";
         }
     }
 }
