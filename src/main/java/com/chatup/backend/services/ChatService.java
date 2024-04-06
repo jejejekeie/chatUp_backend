@@ -71,4 +71,8 @@ public class ChatService {
     public Chat createChat(Chat chat) {
         return chatRepository.save(chat);
     }
+
+    public List<Chat> findChatsByName(String chatName) {
+        return chatRepository.findChatsByName(chatName);
+    }
 }

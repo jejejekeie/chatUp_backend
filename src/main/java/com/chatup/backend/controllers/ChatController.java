@@ -136,6 +136,20 @@ public class ChatController {
     }
 
     @PreAuthorize("isAuthenticated()")
+    @GetMapping("/chats/findByName")
+    public ResponseEntity<List<Chat>> findChatsByName(@RequestBody String chatName) {
+        try {
+            List<Chat> chats = chatService.findChatsByName(chatName);
+            if (chats.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+            }
+            return ResponseEntity.ok(chats);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("/chats/{chatId}/addUser")
     public ResponseEntity<Chat> addUserToChat(
             @PathVariable String chatId,
