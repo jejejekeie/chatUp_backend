@@ -1,13 +1,14 @@
 package com.chatup.backend.controllers;
 
 import com.chatup.backend.component.JwtUtil;
-import com.chatup.backend.dtos.ChangePasswordDTO;
 import com.chatup.backend.models.AuthenticationResponse;
+import com.chatup.backend.models.PasswordResetToken;
 import com.chatup.backend.repositories.UserRepository;
 import com.chatup.backend.dtos.UserLoginDTO;
 import com.chatup.backend.dtos.UserRegisterDTO;
 import com.chatup.backend.models.User;
 import com.chatup.backend.services.CustomUserDetailService;
+import com.chatup.backend.services.PasswordResetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,8 +17,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/auth")
@@ -28,14 +27,16 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final CustomUserDetailService userDetailsService;
     private final JwtUtil jwtTokenUtil;
+    private final PasswordResetService passwordResetService;
 
     @Autowired
-    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, PasswordEncoder passwordEncoder, CustomUserDetailService userDetailsService, JwtUtil jwtTokenUtil) {
+    public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, PasswordEncoder passwordEncoder, CustomUserDetailService userDetailsService, JwtUtil jwtTokenUtil, PasswordResetService passwordResetService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.userDetailsService = userDetailsService;
         this.jwtTokenUtil = jwtTokenUtil;
+        this.passwordResetService = passwordResetService;
     }
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody UserRegisterDTO registerDTO) {
@@ -71,19 +72,29 @@ public class AuthController {
         return ResponseEntity.ok(new AuthenticationResponse(jwt));
     }
 
-    @PostMapping("/password/{email}")
-    public ResponseEntity<?> changePassword(@RequestBody ChangePasswordDTO passwordDTO, @PathVariable String email) {
-        Optional<User> userOptional = userRepository.findByEmail(email);
-        if (!userOptional.isPresent()) {
+    @PostMapping("/forgot-password")
+    public ResponseEntity<?> forgotPassword(@RequestParam("email") String email) {
+        if (userRepository.findByEmail(email).isEmpty()) {
             return ResponseEntity.badRequest().body("User not found");
         }
 
-        User user = userOptional.get();
+        passwordResetService.generatePasswordResetToken(email);
+        return ResponseEntity.ok("Password reset link sent to email");
+    }
 
-        user.setHashPassword(passwordEncoder.encode(passwordDTO.getNewPassword()));
+    @PostMapping("/change-password")
+    public ResponseEntity<?> changePassword(@RequestParam("token") String token,
+                                            @RequestParam("password") String password) {
+        if (!passwordResetService.validatePasswordResetToken(token)) {
+            return ResponseEntity.badRequest().body("Invalid token");
+        }
 
+        PasswordResetToken prt = passwordResetService.getTokenDetails(token);
+        User user = userRepository.findByEmail(prt.getEmail()).get();
+        user.setHashPassword(passwordEncoder.encode(password));
         userRepository.save(user);
 
+        passwordResetService.invalidate(token);
         return ResponseEntity.ok("Password changed successfully");
     }
 }
