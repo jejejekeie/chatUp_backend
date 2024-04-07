@@ -38,6 +38,7 @@ public class AuthController {
         this.jwtTokenUtil = jwtTokenUtil;
         this.passwordResetService = passwordResetService;
     }
+
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody UserRegisterDTO registerDTO) {
         if(userRepository.findByEmail(registerDTO.getEmail()).isPresent()) {
