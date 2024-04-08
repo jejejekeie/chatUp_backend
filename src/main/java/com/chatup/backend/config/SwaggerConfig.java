@@ -10,7 +10,7 @@ public class SwaggerConfig {
     public GroupedOpenApi publicApi() {
         return GroupedOpenApi.builder()
                 .group("public-api")
-                .packagesToScan("com/example/demo/controllers")
+                .packagesToScan("com.chatup.backend.controllers")
                 .build();
     }
 }
