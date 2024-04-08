@@ -15,7 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
-@EnableMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity()
 @EnableWebSecurity
 public class SecurityConfig {
     private final JwtRequestFilter jwtRequestFilter;
@@ -35,7 +35,25 @@ public class SecurityConfig {
                                 "/api/auth/change-password",
                                 "/api/auth/reset-password",
                                 "/auth/reset-password",
-                                "/auth/forgot-password")
+                                "/auth/forgot-password",
+                                "/api/swagger-ui/**",
+                                "/swagger-ui/index.html/**",
+                                "/swagger-ui/favicon-32x32.png",
+                                "/swagger-ui/favicon-16x16.png",
+                                "/api/swagger-ui/swagger-ui-standalone-preset.js",
+                                "/api/swagger-ui/swagger-ui-bundle.js",
+                                "/swagger-ui/swagger-ui-bundle.js",
+                                "/api/swagger-ui/swagger-ui.css",
+                                "/swagger-ui/swagger-ui.css",
+                                "/api/swagger-ui/index.css",
+                                "/swagger-ui/index.css",
+                                "/swagger-ui/swagger-ui-standalone-preset.js",
+                                "/api/swagger-ui/swagger-initializer.js",
+                                "/swagger-ui/swagger-initializer.js",
+                                "/api/v3/api-docs/public-api/**",
+                                "/v3/api-docs/public-api/**",
+                                "/api/v3/api-docs/swagger-config",
+                                "/v3/api-docs/swagger-config")
                         .permitAll()
                         .anyRequest().authenticated()
                 )
