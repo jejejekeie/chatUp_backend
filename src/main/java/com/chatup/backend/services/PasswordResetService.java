@@ -35,7 +35,7 @@ public class PasswordResetService {
         mailMessage.setTo(userEmail);
         mailMessage.setSubject("Password Reset Request");
         mailMessage.setText("To reset your password, click the link below:\n"
-                + "http://localhost:8080/api/auth/change-password?token=" + token +
+                + "https://chatup-backend-i6fa.onrender.com/api/auth/change-password?token=" + token +
                     "\n\nIf you did not request a password reset, please ignore this email.");
         javaMailSender.send(mailMessage);
     }
