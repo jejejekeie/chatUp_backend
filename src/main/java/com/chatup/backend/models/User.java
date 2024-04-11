@@ -25,6 +25,7 @@ public class User {
     private String status;
     private Date lastAccess;
     private Set<String> contacts = new HashSet<>();
+    private String fcmToken;
 
     public User(User user) {
         this.id = user.id; // Ten cuidado con copiar el ID si quieres un objeto realmente separado
@@ -36,5 +37,6 @@ public class User {
         this.status = user.status;
         this.lastAccess = user.lastAccess;
         this.contacts = new HashSet<>(user.contacts);
+        this.fcmToken = user.fcmToken;
     }
 }

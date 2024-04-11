@@ -1,12 +1,9 @@
 package com.chatup.backend.controllers;
 
 import com.chatup.backend.dtos.ChatPreviewDTO;
-import com.chatup.backend.models.Chat;
-import com.chatup.backend.models.ChatCreationRequest;
-import com.chatup.backend.models.Mensaje;
-import com.chatup.backend.models.User;
-import com.chatup.backend.repositories.UserRepository;
+import com.chatup.backend.models.*;
 import com.chatup.backend.services.ChatService;
+import com.chatup.backend.services.FCMService;
 import com.chatup.backend.services.ImageService;
 import com.chatup.backend.services.MensajeService;
 import lombok.RequiredArgsConstructor;
@@ -31,6 +28,7 @@ public class ChatController {
     private final MensajeService messageService;
     private final ChatService chatService;
     private final ImageService imageService;
+    private final FCMService fcmService;
 
     @Value("${file.upload-allowed-mimetypes}")
     private String[] allowedMimeTypes;
@@ -50,6 +48,18 @@ public class ChatController {
     public void processMessage(@DestinationVariable String chatId, Mensaje chatMensaje) {
         Mensaje msjGuardado = messageService.save(chatMensaje);
         messagingTemplate.convertAndSend("/topic/chat/" + chatId, msjGuardado);
+
+        NotificationRequest notificationRequest = new NotificationRequest();
+        notificationRequest.setTitle("Nuevo mensaje" + chatId);
+        notificationRequest.setBody(chatMensaje.getContent());
+        notificationRequest.setTopic(chatId);
+        notificationRequest.setToken(chatMensaje.getSender());
+
+        try {
+            fcmService.sendMessageToToken(notificationRequest);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al enviar notificación");
+        }
     }
 
     @PreAuthorize("isAuthenticated()")

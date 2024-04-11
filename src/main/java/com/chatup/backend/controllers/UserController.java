@@ -5,6 +5,7 @@ import com.chatup.backend.repositories.UserRepository;
 import com.chatup.backend.models.User;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -103,5 +104,13 @@ public class UserController {
             User user = userRepository.findByEmail(email).get();
             return ResponseEntity.ok(user.getContacts());
         }
+    }
+    @PostMapping("/user/{userId}/token")
+    public ResponseEntity<?> updateUserToken(@PathVariable String userId, @RequestBody String token) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        user.setFcmToken(token);
+        userRepository.save(user);
+        return ResponseEntity.ok("Token updated successfully");
     }
 }
