@@ -36,4 +36,5 @@ build/
 ### Firebase configuration ###
 firebase.json
 
-.env
+### Enviroment var ###
+.env/
