@@ -25,7 +25,7 @@ public class ChatService {
             boolean createNewChatIfNotExists
     ) {
         return chatRepository
-                .findChatBy(members)
+                .findChatByMembers(members)
                 .map(Chat::getChatId)
                 .or(() -> {
                     if (createNewChatIfNotExists) {
