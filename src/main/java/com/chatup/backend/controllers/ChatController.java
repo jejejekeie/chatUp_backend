@@ -31,7 +31,6 @@ public class ChatController {
     private final MensajeService messageService;
     private final ChatService chatService;
     private final ImageService imageService;
-    private final UserRepository userRepository;
 
     @Value("${file.upload-allowed-mimetypes}")
     private String[] allowedMimeTypes;
