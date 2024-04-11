@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.Set;
 
 public interface ChatRepository extends MongoRepository<Chat, String> {
-    Optional<Chat> findChatBy(Set<String> miembrosId);
+    Optional<Chat> findChatByMembers(Set<String> miembrosId);
     Optional<Chat> findChatById(String chatId);
     @Query("{'members': ?0}")
     List<Chat> findChatsByMemberId(String memberId);
