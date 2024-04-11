@@ -2,7 +2,6 @@ package com.chatup.backend.services;
 
 import com.chatup.backend.models.PasswordResetToken;
 import com.chatup.backend.repositories.PasswordResetTokenRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -13,11 +12,14 @@ import java.util.UUID;
 
 @Service
 public class PasswordResetService {
-    @Autowired
-    private PasswordResetTokenRepository passwordResetTokenRepository;
 
-    @Autowired
-    private JavaMailSender javaMailSender;
+    private final PasswordResetTokenRepository passwordResetTokenRepository;
+    private final JavaMailSender javaMailSender;
+
+    public PasswordResetService(PasswordResetTokenRepository passwordResetTokenRepository, JavaMailSender javaMailSender) {
+        this.passwordResetTokenRepository = passwordResetTokenRepository;
+        this.javaMailSender = javaMailSender;
+    }
 
     public void generatePasswordResetToken(String userEmail) {
         PasswordResetToken token = new PasswordResetToken();

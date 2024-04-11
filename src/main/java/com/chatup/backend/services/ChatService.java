@@ -20,6 +20,11 @@ public class ChatService {
         this.userRepository = userRepository;
     }
 
+    @CachePut(value = "chatsByMemberId", key = "#chat.members")
+    public Chat createChat(Chat chat) {
+        return chatRepository.save(chat);
+    }
+
     public Optional<String> getChatId (
             Set<String> members,
             boolean createNewChatIfNotExists
@@ -37,20 +42,23 @@ public class ChatService {
                 });
     }
 
+    private String createChatId(Set<String> members) {
+        List<String> sortedMembers = new ArrayList<>(members);
+        Collections.sort(sortedMembers);
+        return String.join("-", sortedMembers);
+    }
+    public List<Chat> findChatsByName(String chatName) {
+        return chatRepository.findChatsByName(chatName);
+    }
+
     @Cacheable(value = "chatsByMemberId", key = "#memberId")
     public List<Chat> getChatsByMemberId(String memberId) {
         return chatRepository.findChatsByMemberId(memberId);
     }
 
-    private String createChatId(Set<String> members) {
-        List<String> sortedMembers = new ArrayList<>(members);
-        Collections.sort(sortedMembers);
-        String chatId = String.join("-", sortedMembers);
-        Chat chat = Chat.builder()
-                .chatId(chatId)
-                .members(new HashSet<>(sortedMembers))
-                .build();
-        return chatId;
+    public List<User> getChatMembers(String chatId) {
+        Set<String> members = chatRepository.findChatById(chatId).orElseThrow().getMembers();
+        return userRepository.findUsersByEmail(members);
     }
 
     public Chat addUserToChat(String chatId, String userId) {
@@ -66,23 +74,5 @@ public class ChatService {
         Chat chat = chatRepository.findChatById(chatId).orElseThrow();
         chat.getMembers().remove(userId);
         return chatRepository.save(chat);
-    }
-
-    public List<User> getChatMembers(String chatId) {
-        Set<String> members = chatRepository.findChatById(chatId).orElseThrow().getMembers();
-        return userRepository.findUsersByEmail(members);
-    }
-
-    @CachePut(value = "chatsByMemberId", key = "#chat.members")
-    public Chat createChat(Chat chat) {
-        return chatRepository.save(chat);
-    }
-
-    public List<Chat> findChatsByName(String chatName) {
-        return chatRepository.findChatsByName(chatName);
-    }
-
-    public Object getUserById(String memberId) {
-        return userRepository.findUserByEmail(memberId).orElseThrow();
     }
 }
