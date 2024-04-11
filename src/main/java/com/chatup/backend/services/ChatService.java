@@ -63,7 +63,7 @@ public class ChatService {
 
     public Chat addUserToChat(String chatId, String userId) {
         Chat chat = chatRepository.findChatById(chatId).orElseThrow(
-                () -> new IllegalArgumentException("Chat not found")
+                () -> new IllegalArgumentException("Chat not found" + chatId + " not found")
         );
         chat.getMembers().add(userId);
         return chatRepository.save(chat);
