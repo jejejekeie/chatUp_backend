@@ -7,15 +7,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 @RestController
@@ -29,7 +22,7 @@ public class UserController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/info/{userId}")
-    public ResponseEntity<?> getUser(@PathVariable String userId, User user) {
+    public ResponseEntity<?> getUser(@PathVariable String userId) {
         if (userId == null || userId.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid request: userI is null");
         } else if (userRepository.findById(userId).isEmpty()) {
@@ -98,13 +91,19 @@ public class UserController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/contacts/{email}")
     public ResponseEntity<?> getContacts(@PathVariable String email) {
-        if (email == null) {
-            return ResponseEntity.badRequest().body("User not found");
-        } else {
-            User user = userRepository.findByEmail(email).get();
-            return ResponseEntity.ok(user.getContacts());
+        if (email == null || email.trim().isEmpty()) {
+            return ResponseEntity.badRequest().body("Invalid request: Email is null or empty");
         }
+
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        if (userOptional.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        User user = userOptional.get();
+        return ResponseEntity.ok(user.getContacts());
     }
+
     @PostMapping("/user/{userId}/token")
     public ResponseEntity<?> updateUserToken(@PathVariable String userId, @RequestBody String token) {
         User user = userRepository.findById(userId)
