@@ -27,9 +27,14 @@ public class User {
     private Set<String> contacts = new HashSet<>();
 
     public User(User user) {
-        this.authorities = "ROLE_USER";
-        this.status = "ACTIVE";
-        this.lastAccess = new Date();
-        this.contacts = new HashSet<>();
+        this.id = user.id; // Ten cuidado con copiar el ID si quieres un objeto realmente separado
+        this.username = user.username;
+        this.email = user.email;
+        this.hashPassword = user.hashPassword;
+        this.authorities = user.authorities;
+        this.fotoPerfil = user.fotoPerfil;
+        this.status = user.status;
+        this.lastAccess = user.lastAccess;
+        this.contacts = new HashSet<>(user.contacts);
     }
 }

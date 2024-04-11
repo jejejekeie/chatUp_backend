@@ -1,7 +1,6 @@
 package com.chatup.backend.repositories;
 
 import com.chatup.backend.models.Chat;
-import com.chatup.backend.models.User;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
 
