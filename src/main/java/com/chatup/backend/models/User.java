@@ -26,7 +26,7 @@ public class User {
     private Date lastAccess;
     private Set<String> contacts = new HashSet<>();
 
-    public User(User userDb) {
+    public User(User user) {
         this.authorities = "ROLE_USER";
         this.status = "ACTIVE";
         this.lastAccess = new Date();
