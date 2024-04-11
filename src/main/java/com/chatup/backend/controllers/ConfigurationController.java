@@ -1,10 +1,11 @@
 package com.chatup.backend.controllers;
 
+import com.chatup.backend.dtos.UpdateUserDTO;
 import com.chatup.backend.models.User;
 import com.chatup.backend.repositories.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Repository;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,7 +34,7 @@ public class ConfigurationController {
         }
 
         Optional<User> userOptional = userRepository.findById(userId);
-        if (!userOptional.isPresent()) {
+        if (userOptional.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
@@ -41,38 +42,44 @@ public class ConfigurationController {
         return ResponseEntity.ok("User deleted successfully");
     }
 
-    private String StoreProfilePicture(MultipartFile fotoPerfil) {
+    private String storeProfilePicture(MultipartFile fotoPerfil) {
         if (fotoPerfil.isEmpty()) {
             return "";
         }
         try {
             Path path = Paths.get("src/main/resources/static/images/profile");
-            Files.copy(fotoPerfil.getInputStream(), path.resolve(Objects.requireNonNull(fotoPerfil.getOriginalFilename())));
-            return fotoPerfil.getOriginalFilename();
+            if (!Files.exists(path)) {
+                Files.createDirectories(path);
+            }
+            Path filePath = path.resolve(Objects.requireNonNull(fotoPerfil.getOriginalFilename()));
+            Files.copy(fotoPerfil.getInputStream(), filePath);
+            return filePath.toString();
         } catch (IOException e) {
-            e.printStackTrace();
-            return "";
+            throw new RuntimeException("Could not store the file. Error: " + e.getMessage());
         }
     }
-
 
     @PreAuthorize("isAuthenticated()")
     @PutMapping("/update/{userId}")
     public ResponseEntity<?> updateUser(
-            @RequestParam("username") String username,
-            @RequestParam("fotoPerfil") MultipartFile fotoPerfil,
-            @RequestParam("email") String email,
-            @PathVariable String userId) {
-        Optional<User> userOptional = userRepository.findById(userId);
-        if (!userOptional.isPresent()) {
-            return ResponseEntity.notFound().build();
-        } else {
-            User user = userOptional.get();
-            user.setUsername(username);
-            user.setEmail(email);
-            user.setFotoPerfil(StoreProfilePicture(fotoPerfil));
-            userRepository.save(user);
-            return ResponseEntity.ok("User updated successfully");
+            @PathVariable String userId,
+            UpdateUserDTO updateUserDTO,
+            @RequestParam("fotoPerfil") MultipartFile fotoPerfil) {
+
+        User user = userRepository.findById(userId).orElseThrow(()
+                -> new UsernameNotFoundException("User not found"));
+
+        if (updateUserDTO.getUsername() != null) {
+            user.setUsername(updateUserDTO.getUsername());
         }
+        if (updateUserDTO.getStatus() != null) {
+            user.setStatus(updateUserDTO.getStatus());
+        }
+        if (fotoPerfil != null && !fotoPerfil.isEmpty()) {
+            String fotoUrl = storeProfilePicture(fotoPerfil);
+            user.setFotoPerfil(fotoUrl);
+        }
+        userRepository.save(user);
+        return ResponseEntity.ok("User updated successfully");
     }
 }
