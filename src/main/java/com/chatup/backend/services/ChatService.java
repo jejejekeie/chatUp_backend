@@ -4,6 +4,9 @@ import com.chatup.backend.models.Chat;
 import com.chatup.backend.models.User;
 import com.chatup.backend.repositories.ChatRepository;
 import com.chatup.backend.repositories.UserRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -34,6 +37,7 @@ public class ChatService {
                 });
     }
 
+    @Cacheable(value = "chatsByMemberId", key = "#memberId")
     public List<Chat> getChatsByMemberId(String memberId) {
         return chatRepository.findChatsByMemberId(memberId);
     }
@@ -57,6 +61,7 @@ public class ChatService {
         return chatRepository.save(chat);
     }
 
+    @CacheEvict(value = "chatsByMemberId", key = "#userId")
     public Chat removeUserFromChat(String chatId, String userId) {
         Chat chat = chatRepository.findChatById(chatId).orElseThrow();
         chat.getMembers().remove(userId);
@@ -68,6 +73,7 @@ public class ChatService {
         return userRepository.findUsersByEmail(members);
     }
 
+    @CachePut(value = "chatsByMemberId", key = "#chat.members")
     public Chat createChat(Chat chat) {
         return chatRepository.save(chat);
     }

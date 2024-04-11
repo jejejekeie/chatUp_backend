@@ -2,6 +2,8 @@ package com.chatup.backend.services;
 
 import com.chatup.backend.models.Mensaje;
 import com.chatup.backend.repositories.MensajeRepository;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -19,6 +21,7 @@ public class MensajeService {
         this.chatService = chatService;
     }
 
+    @CachePut(value = "messagesByChatId", key = "#mensaje.chatId")
     public Mensaje save(Mensaje mensaje) {
         assert mensaje.getSender() != null;
         Set<String> members = new java.util.HashSet<>(Set.of(mensaje.getSender()));
@@ -39,6 +42,7 @@ public class MensajeService {
         return mensajeRepository.findByChatId(chatId);
     }
 
+    @Cacheable(value = "messagesByChatId", key = "#id")
     public Mensaje findLastMessageByChatId(String id) {
         return mensajeRepository.findFirstByChatIdOrderByTimestampDesc(id);
     }
