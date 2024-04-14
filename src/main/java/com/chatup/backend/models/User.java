@@ -28,7 +28,6 @@ public class User {
     private String fcmToken;
 
     public User(User user) {
-        this.id = user.id; // Ten cuidado con copiar el ID si quieres un objeto realmente separado
         this.username = user.username;
         this.email = user.email;
         this.hashPassword = user.hashPassword;
