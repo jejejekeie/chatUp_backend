@@ -1,6 +1,6 @@
 package com.chatup.backend.config;
 
-import com.chatup.backend.component.JwtUtil;
+import com.chatup.backend.utils.JwtUtil;
 import com.chatup.backend.services.CustomUserDetailService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
