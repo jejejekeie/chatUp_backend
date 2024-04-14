@@ -1,4 +1,4 @@
-package com.chatup.backend.component;
+package com.chatup.backend.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

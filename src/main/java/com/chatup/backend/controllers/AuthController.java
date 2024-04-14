@@ -1,6 +1,6 @@
 package com.chatup.backend.controllers;
 
-import com.chatup.backend.component.JwtUtil;
+import com.chatup.backend.utils.JwtUtil;
 import com.chatup.backend.models.AuthenticationResponse;
 import com.chatup.backend.models.PasswordResetToken;
 import com.chatup.backend.repositories.UserRepository;
