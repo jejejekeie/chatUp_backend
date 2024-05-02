@@ -9,14 +9,14 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.http.HttpServletResponse;
-
+/*
 @Configuration
 @EnableMongoRepositories(basePackages = "com.chatup.backend.repositories")
 public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("http://localhost:63342")
+        registry.addMapping("/**")
                 .allowedOriginPatterns("*")
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                 .allowedHeaders("*")
@@ -38,3 +38,5 @@ public class WebConfig implements WebMvcConfigurer {
                 });
     }
 }
+
+ */
