@@ -13,7 +13,6 @@ import java.util.Set;
 public class ChatPreviewDTO {
     private String chatId;
     private String chatName;
-    private Set<String> members;
     private String chatType;
     private Mensaje lastMessage;
 }
