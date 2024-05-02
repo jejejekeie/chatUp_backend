@@ -109,8 +109,8 @@ public class ChatController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/chats/previews")
-    public ResponseEntity<List<ChatPreviewDTO>> getChatPreviews(@RequestBody String userId) {
+    @GetMapping("/previews")
+    public ResponseEntity<List<ChatPreviewDTO>> getChatPreviews(@RequestParam String userId) {
         try {
             List<Chat> chats = chatService.getChatsByMemberId(userId);
             List<ChatPreviewDTO> chatPreviews = new ArrayList<>();
