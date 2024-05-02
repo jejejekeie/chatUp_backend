@@ -21,5 +21,5 @@ public class Mensaje {
     private String sender;
     private String content;
     private Date timestamp;
-    private String imageURL;
+    //private String imageURL;
 }
