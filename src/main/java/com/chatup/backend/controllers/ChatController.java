@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @Controller
+@RequestMapping("/chat")
 @RequiredArgsConstructor
 public class ChatController {
     private final SimpMessagingTemplate messagingTemplate;
@@ -33,7 +34,7 @@ public class ChatController {
     private String[] allowedMimeTypes;
  */
     //@PreAuthorize("isAuthenticated()")
-    @MessageMapping("/chat")
+    @MessageMapping("/processMessage")
     public void processMessage(Mensaje chatMensaje) {
         Mensaje msjGuardado = messageService.save(chatMensaje);
         messagingTemplate.convertAndSendToUser(
@@ -43,7 +44,7 @@ public class ChatController {
     }
 
     //@PreAuthorize("isAuthenticated()")
-    @MessageMapping("/chat/{chatId}")
+    @MessageMapping("processMessage/{chatId}")
     public void processMessage(@DestinationVariable String chatId, Mensaje chatMensaje) {
         Mensaje msjGuardado = messageService.save(chatMensaje);
         messagingTemplate.convertAndSend("/topic/chat/" + chatId, msjGuardado);
@@ -62,7 +63,7 @@ public class ChatController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/mensajes/{chatId}/{page}/{size}")
+    @GetMapping("/messages/{chatId}/{page}/{size}")
     public ResponseEntity<List<Mensaje>> getMensajesChatPaginated(
             @PathVariable String chatId,
             @PathVariable int page,
@@ -72,7 +73,7 @@ public class ChatController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/mensajes/{chatId}")
+    @GetMapping("/messages/{chatId}")
     public ResponseEntity<List<Mensaje>> getMensajesChat(
             @PathVariable String chatId
     ) {
@@ -80,7 +81,7 @@ public class ChatController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/chats")
+    @PostMapping("/newChat")
     public ResponseEntity<?> createChat(@RequestBody ChatCreationRequest request) {
         if (!membersAreValid(request.getMembers())) {
             return ResponseEntity.badRequest().body("No se puede crear un chat con un solo miembro.");
@@ -102,7 +103,7 @@ public class ChatController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/chats/user/{userId}")
+    @GetMapping("user/{userId}")
     public ResponseEntity<List<Chat>> getChatsByUser(@PathVariable String userId) {
         List<Chat> chats = chatService.getChatsByMemberId(userId);
         return ResponseEntity.ok(chats);
@@ -133,7 +134,7 @@ public class ChatController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/chats/findByName")
+    @GetMapping("findByName")
     public ResponseEntity<List<Chat>> findChatsByName(@RequestBody String chatName) {
         try {
             List<Chat> chats = chatService.findChatsByName(chatName);
@@ -147,7 +148,7 @@ public class ChatController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PutMapping("/chats/{chatId}/addUser")
+    @PutMapping("{chatId}/addUser")
     public ResponseEntity<Chat> addUserToChat(
             @PathVariable String chatId,
             @RequestBody String userId
@@ -156,7 +157,7 @@ public class ChatController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("/chats/{chatId}/removeUser/{userId}")
+    @DeleteMapping("{chatId}/removeUser/{userId}")
     public ResponseEntity<Chat> removeUserFromChat(
             @PathVariable String chatId,
             @PathVariable String userId
@@ -165,7 +166,7 @@ public class ChatController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("/chats/{chatId}/members")
+    @GetMapping("{chatId}/members")
     public ResponseEntity<List<User>> getChatMembers(@PathVariable String chatId) {
         return ResponseEntity.ok(chatService.getChatMembers(chatId));
     }
