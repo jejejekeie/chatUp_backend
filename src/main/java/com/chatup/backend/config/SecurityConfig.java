@@ -53,6 +53,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers(
                                 "/api/**",
+                                "api/previews/**",
+                                "/previews/**",
                                 "/ws-endpoint/**",
                                 "/api/ws-endpoint/**",
                                 "/ws/**",
