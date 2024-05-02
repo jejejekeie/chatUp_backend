@@ -121,7 +121,6 @@ public class ChatController {
                 ChatPreviewDTO chatPreview = new ChatPreviewDTO(
                         chat.getChatId(),
                         chat.getName(),
-                        chat.getMembers(),
                         chat.getChatType(),
                         lastMessage
                 );
