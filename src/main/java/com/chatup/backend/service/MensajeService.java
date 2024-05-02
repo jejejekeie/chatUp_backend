@@ -1,4 +1,4 @@
-package com.chatup.backend.services;
+package com.chatup.backend.service;
 
 import com.chatup.backend.models.Mensaje;
 import com.chatup.backend.repositories.MensajeRepository;

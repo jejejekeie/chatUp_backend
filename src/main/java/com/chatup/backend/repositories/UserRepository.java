@@ -19,5 +19,6 @@ public interface UserRepository extends MongoRepository<User, String> {
     @Query("{ 'email' : { $in: ?0 } }")
     @NonNull
     List<User> findUsersByEmail(Set<String> emails);
+    List<User> findByUsernameContainingOrEmailContaining(String username, String email);
 }
 

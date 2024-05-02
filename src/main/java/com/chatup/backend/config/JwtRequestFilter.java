@@ -1,7 +1,7 @@
 package com.chatup.backend.config;
 
 import com.chatup.backend.utils.JwtUtil;
-import com.chatup.backend.services.CustomUserDetailService;
+import com.chatup.backend.service.CustomUserDetailService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -30,7 +30,7 @@ public class JwtRequestFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String requestURI = request.getRequestURI();
-        if (requestURI.contains("/swagger") || requestURI.contains("/v3/api-docs")) {
+        if (requestURI.startsWith("/ws") || requestURI.contains("/swagger") || requestURI.contains("/v3/api-docs")) {
             filterChain.doFilter(request, response);
             return;
         }

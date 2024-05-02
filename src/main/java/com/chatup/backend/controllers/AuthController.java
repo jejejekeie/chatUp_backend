@@ -7,8 +7,8 @@ import com.chatup.backend.repositories.UserRepository;
 import com.chatup.backend.dtos.UserLoginDTO;
 import com.chatup.backend.dtos.UserRegisterDTO;
 import com.chatup.backend.models.User;
-import com.chatup.backend.services.CustomUserDetailService;
-import com.chatup.backend.services.PasswordResetService;
+import com.chatup.backend.service.CustomUserDetailService;
+import com.chatup.backend.service.PasswordResetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -69,8 +69,9 @@ public class AuthController {
                 .loadUserByUsername(authenticationRequest.getEmail());
 
         final String jwt = jwtTokenUtil.generateToken(userDetails);
+        final String userId = userRepository.findByEmail(authenticationRequest.getEmail()).get().getId();
 
-        return ResponseEntity.ok(new AuthenticationResponse(jwt));
+        return ResponseEntity.ok(new AuthenticationResponse(jwt, userId));
     }
 
     @PostMapping("/forgot-password")

@@ -1,4 +1,4 @@
-package com.chatup.backend.services;
+package com.chatup.backend.service;
 
 import com.chatup.backend.models.Chat;
 import com.chatup.backend.models.User;

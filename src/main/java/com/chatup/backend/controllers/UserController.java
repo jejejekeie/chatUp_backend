@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/user")
@@ -24,7 +25,7 @@ public class UserController {
     @GetMapping("/info/{userId}")
     public ResponseEntity<?> getUser(@PathVariable String userId) {
         if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.badRequest().body("Invalid request: userI is null");
+            return ResponseEntity.badRequest().body("Invalid request: userId is null");
         } else if (userRepository.findById(userId).isEmpty()) {
             return ResponseEntity.notFound().build();
         } else {
@@ -32,6 +33,17 @@ public class UserController {
             return ResponseEntity.ok(new User(userDb));
         }
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/search")
+    public ResponseEntity<?> searchUsers(@RequestParam("query") String query) {
+        List<User> users = userRepository.findByUsernameContainingOrEmailContaining(query, query);
+        List<UserDTO> userDTOS = users.stream()
+                .map(user -> new UserDTO(user.getUsername(), user.getEmail(), user.getFotoPerfil(), user.getStatus()))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(userDTOS);
+    }
+
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/users")
