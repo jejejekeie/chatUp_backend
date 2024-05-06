@@ -37,7 +37,6 @@ public class ChatService {
                         var chatId = createChatId(members);
                         return Optional.of(chatId);
                     }
-
                     return Optional.empty();
                 });
     }
