@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 
 import java.io.IOException;
 import org.slf4j.Logger;
-
+/*
 @Service
 public class FCMInitializer {
     private static final Logger logger = LoggerFactory.getLogger(FCMInitializer.class);
@@ -48,3 +48,5 @@ public class FCMInitializer {
         }
     }
 }
+
+ */

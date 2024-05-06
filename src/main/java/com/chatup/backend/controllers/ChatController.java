@@ -28,7 +28,7 @@ public class ChatController {
     private final MensajeService messageService;
     private final ChatService chatService;
     //private final ImageService imageService;
-    private final FCMService fcmService;
+    //private final FCMService fcmService;
 /*
     @Value("${file.upload-allowed-mimetypes}")
     private String[] allowedMimeTypes;
@@ -55,11 +55,13 @@ public class ChatController {
         notificationRequest.setTopic(chatId);
         notificationRequest.setToken(chatMensaje.getSender());
 
+        /*
         try {
             fcmService.sendMessageToToken(notificationRequest);
         } catch (Exception e) {
             throw new RuntimeException("Error al enviar notificación");
         }
+         */
     }
 
     @PreAuthorize("isAuthenticated()")
