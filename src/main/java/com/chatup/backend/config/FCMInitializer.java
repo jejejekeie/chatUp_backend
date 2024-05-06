@@ -14,7 +14,7 @@ import org.slf4j.Logger;
 
 @Service
 public class FCMInitializer {
-    @Value("classpath:json/firebase.json")
+    @Value("${src/main/resources/firebase-config.json}")
     private String firebaseConfigPath;
     Logger logger = LoggerFactory.getLogger(FCMInitializer.class);
     @PostConstruct
