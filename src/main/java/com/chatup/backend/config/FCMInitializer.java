@@ -14,21 +14,30 @@ import org.slf4j.Logger;
 
 @Service
 public class FCMInitializer {
-    @Value("${src/main/resources/firebase-config.json}")
-    private String firebaseConfigPath;
-    Logger logger = LoggerFactory.getLogger(FCMInitializer.class);
+    private static final Logger logger = LoggerFactory.getLogger(FCMInitializer.class);
+
     @PostConstruct
     public void initialize() {
         try {
+            // Retrieve the environment variable
+            String firebaseConfigJson = System.getenv("FIREBASE_CONFIG");
+            if (firebaseConfigJson == null || firebaseConfigJson.isEmpty()) {
+                throw new IllegalArgumentException("FIREBASE_CONFIG environment variable is not set or empty");
+            }
+
+            // Convert the JSON string to an input stream
+            ByteArrayInputStream serviceAccount = new ByteArrayInputStream(firebaseConfigJson.getBytes(StandardCharsets.UTF_8));
+
             FirebaseOptions options = FirebaseOptions.builder()
-                    .setCredentials(GoogleCredentials.fromStream(new ClassPathResource(firebaseConfigPath).getInputStream()))
+                    .setCredentials(GoogleCredentials.fromStream(serviceAccount))
                     .build();
+
             if (FirebaseApp.getApps().isEmpty()) {
                 FirebaseApp.initializeApp(options);
                 logger.info("Firebase application initialized");
             }
         } catch (IOException e) {
-            logger.error(e.getMessage());
+            logger.error("Failed to initialize Firebase", e);
         }
     }
 }
