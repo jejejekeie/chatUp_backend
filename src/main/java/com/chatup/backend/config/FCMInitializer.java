@@ -11,13 +11,12 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service
 public class FCMInitializer {
     @Value("classpath:json/firebase.json")
     private String firebaseConfigPath;
-    Logger logger = (Logger) LoggerFactory.getLogger(FCMInitializer.class);
+    Logger logger = LoggerFactory.getLogger(FCMInitializer.class);
     @PostConstruct
     public void initialize() {
         try {

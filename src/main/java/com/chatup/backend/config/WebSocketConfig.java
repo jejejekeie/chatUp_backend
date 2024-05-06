@@ -7,6 +7,7 @@ import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.converter.MessageConverter;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.util.MimeTypeUtils;
+import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
@@ -15,7 +16,6 @@ import org.springframework.web.socket.config.annotation.WebSocketTransportRegist
 import org.springframework.web.socket.handler.WebSocketHandlerDecorator;
 import org.springframework.web.socket.handler.WebSocketHandlerDecoratorFactory;
 
-import java.io.Console;
 import java.util.List;
 
 @Configuration
@@ -24,9 +24,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        //registry.addEndpoint("/ws-endpoint").withSockJS();
-        registry.addEndpoint("/ws").setAllowedOrigins("http://localhost:63342").withSockJS();
-        registry.addEndpoint("/api/ws").setAllowedOrigins("http://localhost:63342").withSockJS();
+        registry.addEndpoint("/api/ws").setAllowedOrigins("http://localhost:4200");
+        registry.addEndpoint("/api/ws").setAllowedOrigins("http://localhost:4200").withSockJS();
+        registry.addEndpoint("/ws").setAllowedOrigins("http://localhost:4200");
+        registry.addEndpoint("/ws").setAllowedOrigins("http://localhost:4200").withSockJS();
     }
 
     @Override
@@ -55,8 +56,18 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         return handler -> new WebSocketHandlerDecorator(handler) {
             @Override
             public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-                System.out.println("WebSocket connection established with session: " + session.getId());;
+                System.out.println("WebSocket connection established with session: " + session.getId());
+                System.out.println("Session details: " + session);
+                System.out.println("Remote address: " + session.getRemoteAddress());
                 super.afterConnectionEstablished(session);
+            }
+
+            @Override
+            public void afterConnectionClosed(WebSocketSession session, CloseStatus closeStatus) throws Exception {
+                System.out.println("WebSocket connection closed with session: " + session.getId());
+                System.out.println("Session details: " + session);
+                System.out.println("Remote address: " + session.getRemoteAddress());
+                super.afterConnectionClosed(session, closeStatus);
             }
         };
     }

@@ -80,6 +80,7 @@ public class ChatController {
         return ResponseEntity.ok(messageService.findMensajesChat(chatId));
     }
 
+
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/newChat")
     public ResponseEntity<?> createChat(@RequestBody ChatCreationRequest request) {
