@@ -21,9 +21,8 @@ public class FCMInitializer {
     @PostConstruct
     public void initialize() {
         try {
-            // Retrieve the environment variable
-            String firebaseConfigJson = System.getenv("FIREBASE_CONFIG");
-            if (firebaseConfigJson == null || firebaseConfigJson.isEmpty()) {
+            String firebaseConfigJson = "firebase-config.json";
+            if (firebaseConfigJson.isEmpty()) {
                 throw new IllegalArgumentException("FIREBASE_CONFIG environment variable is not set or empty");
             }
 
