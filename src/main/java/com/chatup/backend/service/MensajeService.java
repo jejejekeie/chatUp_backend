@@ -23,15 +23,14 @@ public class MensajeService {
 
     @CachePut(value = "messagesByChatId", key = "#mensaje.chatId")
     public Mensaje save(Mensaje mensaje) {
-        assert mensaje.getSender() != null;
-        Set<String> members = new java.util.HashSet<>(Set.of(mensaje.getSender()));
+        assert mensaje.getSender() != null && mensaje.getChatId() != null : "Sender and Chat ID must not be null";
+        //Set<String> members = new java.util.HashSet<>(Set.of(mensaje.getSender()));
+        //members.add(mensaje.getSender());
 
-        members.add(mensaje.getSender());
-
-        var chatId = chatService.getChatId(members, true).orElseThrow(() -> new RuntimeException("Chat not found"));
-        mensaje.setChatId(chatId);
-        mensajeRepository.save(mensaje);
-        return mensaje;
+        //var chatId = chatService.getChatId(members, true).orElseThrow(() -> new RuntimeException("Chat not found"));
+        //mensaje.setChatId(chatId);
+        return  mensajeRepository.save(mensaje);
+        //return mensaje;
     }
 
     public Page<Mensaje> findMensajesChatPageable(String chatId, int page, int size) {

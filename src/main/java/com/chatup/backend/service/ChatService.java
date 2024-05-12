@@ -46,6 +46,7 @@ public class ChatService {
         Collections.sort(sortedMembers);
         return String.join("-", sortedMembers);
     }
+
     public List<Chat> findChatsByName(String chatName) {
         return chatRepository.findChatsByName(chatName);
     }

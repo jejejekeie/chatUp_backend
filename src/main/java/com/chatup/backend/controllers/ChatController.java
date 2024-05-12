@@ -49,11 +49,11 @@ public class ChatController {
         Mensaje msjGuardado = messageService.save(chatMensaje);
         messagingTemplate.convertAndSend("/topic/chat/" + chatId, msjGuardado);
 
-        NotificationRequest notificationRequest = new NotificationRequest();
-        notificationRequest.setTitle("Nuevo mensaje" + chatId);
-        notificationRequest.setBody(chatMensaje.getContent());
-        notificationRequest.setTopic(chatId);
-        notificationRequest.setToken(chatMensaje.getSender());
+        //NotificationRequest notificationRequest = new NotificationRequest();
+        //notificationRequest.setTitle("Nuevo mensaje" + chatId);
+        //notificationRequest.setBody(chatMensaje.getContent());
+        //notificationRequest.setTopic(chatId);
+        //notificationRequest.setToken(chatMensaje.getSender());
     }
 
     @PreAuthorize("isAuthenticated()")
