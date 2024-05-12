@@ -3,7 +3,6 @@ package com.chatup.backend.controllers;
 import com.chatup.backend.dtos.ChatPreviewDTO;
 import com.chatup.backend.models.*;
 import com.chatup.backend.service.ChatService;
-import com.chatup.backend.service.FCMService;
 //import com.chatup.backend.service.ImageService;
 import com.chatup.backend.service.MensajeService;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +45,7 @@ public class ChatController {
     //@PreAuthorize("isAuthenticated()")
     @MessageMapping("processMessage/{chatId}")
     public void processMessage(@DestinationVariable String chatId, Mensaje chatMensaje) {
+        chatMensaje.setChatId(chatId);
         Mensaje msjGuardado = messageService.save(chatMensaje);
         messagingTemplate.convertAndSend("/topic/chat/" + chatId, msjGuardado);
 
@@ -54,14 +54,6 @@ public class ChatController {
         notificationRequest.setBody(chatMensaje.getContent());
         notificationRequest.setTopic(chatId);
         notificationRequest.setToken(chatMensaje.getSender());
-
-        /*
-        try {
-            fcmService.sendMessageToToken(notificationRequest);
-        } catch (Exception e) {
-            throw new RuntimeException("Error al enviar notificación");
-        }
-         */
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -81,7 +73,6 @@ public class ChatController {
     ) {
         return ResponseEntity.ok(messageService.findMensajesChat(chatId));
     }
-
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/newChat")
