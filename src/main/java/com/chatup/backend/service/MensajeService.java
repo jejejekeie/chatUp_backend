@@ -31,7 +31,9 @@ public class MensajeService {
         User user = userRepository.findById(mensaje.getSender())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         mensaje.setSenderUsername(user.getUsername());
-        return mensajeRepository.save(mensaje);
+        Mensaje savedMessage = mensajeRepository.save(mensaje);
+        System.out.println("Saving message: " + savedMessage.getContent());
+        return savedMessage;
     }
 
     public Page<Mensaje> findMensajesChatPageable(String chatId, int page, int size) {
