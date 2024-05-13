@@ -1,6 +1,8 @@
 package com.chatup.backend.service;
 
+import com.chatup.backend.dtos.ChatPreviewDTO;
 import com.chatup.backend.models.Chat;
+import com.chatup.backend.models.Mensaje;
 import com.chatup.backend.models.User;
 import com.chatup.backend.repositories.ChatRepository;
 import com.chatup.backend.repositories.UserRepository;
@@ -15,9 +17,13 @@ import java.util.*;
 public class ChatService {
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
-    public ChatService(ChatRepository chatRepository, UserRepository userRepository) {
+    private final MensajeService messageService;
+
+    public ChatService(ChatRepository chatRepository, UserRepository userRepository, MensajeService messageService) {
         this.chatRepository = chatRepository;
         this.userRepository = userRepository;
+        this.messageService = messageService;
+
     }
 
     @CachePut(value = "chatsByMemberId", key = "#chat.members")
@@ -74,5 +80,20 @@ public class ChatService {
         Chat chat = chatRepository.findChatById(chatId).orElseThrow();
         chat.getMembers().remove(userId);
         return chatRepository.save(chat);
+    }
+
+    public List<ChatPreviewDTO> getChatPreviews(String userId) {
+        List<Chat> chats = chatRepository.findChatsByMemberId(userId);
+        List<ChatPreviewDTO> chatPreviews = new ArrayList<>();
+        for (Chat chat : chats) {
+            Mensaje lastMessage = messageService.findLastMessageByChatId(chat.getChatId());
+            chatPreviews.add(new ChatPreviewDTO(
+                    chat.getChatId(),
+                    chat.getName(),
+                    chat.getChatType(),
+                    lastMessage
+            ));
+        }
+        return chatPreviews;
     }
 }

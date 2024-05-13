@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
-import java.sql.Date;
+import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -22,5 +22,4 @@ public class Mensaje {
     private String senderUsername;
     private String content;
     private Date timestamp;
-    //private String imageURL;
 }

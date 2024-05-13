@@ -10,6 +10,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -24,6 +25,9 @@ public class MensajeService {
 
     @CachePut(value = "messagesByChatId", key = "#mensaje.chatId")
     public Mensaje save(Mensaje mensaje) {
+        if (mensaje.getTimestamp() == null) {
+            mensaje.setTimestamp(new Date());
+        }
         User user = userRepository.findById(mensaje.getSender())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         mensaje.setSenderUsername(user.getUsername());
