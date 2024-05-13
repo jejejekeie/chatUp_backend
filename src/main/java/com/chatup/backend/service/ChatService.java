@@ -96,4 +96,8 @@ public class ChatService {
         }
         return chatPreviews;
     }
+
+    public void deleteChat(String chatId) {
+        chatRepository.deleteById(chatId);
+    }
 }

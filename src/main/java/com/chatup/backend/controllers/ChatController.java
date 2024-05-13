@@ -123,6 +123,13 @@ public class ChatController {
     }
 
     @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/{chatId}")
+    public ResponseEntity<?> deleteChat(@PathVariable String chatId) {
+        chatService.deleteChat(chatId);
+        return ResponseEntity.ok("Chat eliminado correctamente");
+    }
+
+    @PreAuthorize("isAuthenticated()")
     @PutMapping("{chatId}/addUser")
     public ResponseEntity<Chat> addUserToChat(
             @PathVariable String chatId,
