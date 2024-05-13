@@ -39,7 +39,7 @@ public class UserController {
     public ResponseEntity<?> searchUsers(@RequestParam("query") String query) {
         List<User> users = userRepository.findByUsernameContainingOrEmailContaining(query, query);
         List<UserDTO> userDTOS = users.stream()
-                .map(user -> new UserDTO(user.getUsername(), user.getEmail(), user.getFotoPerfil(), user.getStatus()))
+                .map(user -> new UserDTO(user.getId(),user.getUsername(), user.getEmail(), user.getFotoPerfil(), user.getStatus()))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(userDTOS);
     }

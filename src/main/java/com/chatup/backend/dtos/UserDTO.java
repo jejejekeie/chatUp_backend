@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Setter
 @Document
 public class UserDTO {
+    private String id;
     private String username;
     @Indexed(unique = true)
     private String email;

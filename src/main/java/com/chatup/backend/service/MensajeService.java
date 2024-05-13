@@ -9,16 +9,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Set;
 
 @Service
 public class MensajeService {
     private final MensajeRepository mensajeRepository;
-    private final ChatService chatService;
 
-    public MensajeService(MensajeRepository mensajeRepository, ChatService chatService) {
+    public MensajeService(MensajeRepository mensajeRepository) {
         this.mensajeRepository = mensajeRepository;
-        this.chatService = chatService;
     }
 
     @CachePut(value = "messagesByChatId", key = "#mensaje.chatId")
