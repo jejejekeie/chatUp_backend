@@ -1,7 +1,9 @@
 package com.chatup.backend.service;
 
 import com.chatup.backend.models.Mensaje;
+import com.chatup.backend.models.User;
 import com.chatup.backend.repositories.MensajeRepository;
+import com.chatup.backend.repositories.UserRepository;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
@@ -13,21 +15,19 @@ import java.util.List;
 @Service
 public class MensajeService {
     private final MensajeRepository mensajeRepository;
+    private final UserRepository userRepository;
 
-    public MensajeService(MensajeRepository mensajeRepository) {
+    public MensajeService(MensajeRepository mensajeRepository, UserRepository userRepository) {
         this.mensajeRepository = mensajeRepository;
+        this.userRepository = userRepository;
     }
 
     @CachePut(value = "messagesByChatId", key = "#mensaje.chatId")
     public Mensaje save(Mensaje mensaje) {
-        assert mensaje.getSender() != null && mensaje.getChatId() != null : "Sender and Chat ID must not be null";
-        //Set<String> members = new java.util.HashSet<>(Set.of(mensaje.getSender()));
-        //members.add(mensaje.getSender());
-
-        //var chatId = chatService.getChatId(members, true).orElseThrow(() -> new RuntimeException("Chat not found"));
-        //mensaje.setChatId(chatId);
-        return  mensajeRepository.save(mensaje);
-        //return mensaje;
+        User user = userRepository.findById(mensaje.getSender())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        mensaje.setSenderUsername(user.getUsername());
+        return mensajeRepository.save(mensaje);
     }
 
     public Page<Mensaje> findMensajesChatPageable(String chatId, int page, int size) {
@@ -35,7 +35,14 @@ public class MensajeService {
     }
 
     public List<Mensaje> findMensajesChat(String chatId) {
-        return mensajeRepository.findByChatId(chatId);
+    List<Mensaje> messages = mensajeRepository.findByChatId(chatId);
+    messages.forEach(msg -> {
+        User user = userRepository.findById(msg.getSender()).orElse(null);
+        if (user != null) {
+            msg.setSenderUsername(user.getUsername());
+        }
+    });
+    return messages;
     }
 
     @Cacheable(value = "messagesByChatId", key = "#id")

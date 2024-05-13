@@ -19,6 +19,7 @@ public class Mensaje {
     private String id;
     private String chatId;
     private String sender;
+    private String senderUsername;
     private String content;
     private Date timestamp;
     //private String imageURL;

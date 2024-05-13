@@ -24,12 +24,7 @@ public class ChatController {
     private final SimpMessagingTemplate messagingTemplate;
     private final MensajeService messageService;
     private final ChatService chatService;
-    //private final ImageService imageService;
-    //private final FCMService fcmService;
-/*
-    @Value("${file.upload-allowed-mimetypes}")
-    private String[] allowedMimeTypes;
- */
+
     //@PreAuthorize("isAuthenticated()")
     @MessageMapping("/processMessage")
     public void processMessage(Mensaje chatMensaje) {
@@ -46,12 +41,6 @@ public class ChatController {
         chatMensaje.setChatId(chatId);
         Mensaje msjGuardado = messageService.save(chatMensaje);
         messagingTemplate.convertAndSend("/topic/chat/" + chatId, msjGuardado);
-
-        //NotificationRequest notificationRequest = new NotificationRequest();
-        //notificationRequest.setTitle("Nuevo mensaje" + chatId);
-        //notificationRequest.setBody(chatMensaje.getContent());
-        //notificationRequest.setTopic(chatId);
-        //notificationRequest.setToken(chatMensaje.getSender());
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -161,26 +150,4 @@ public class ChatController {
     public ResponseEntity<List<User>> getChatMembers(@PathVariable String chatId) {
         return ResponseEntity.ok(chatService.getChatMembers(chatId));
     }
-
-    /*
-    @PreAuthorize("isAuthenticated()")
-    @PostMapping("/uploadImage")
-    public ResponseEntity<String> uploadImage(@RequestParam("image") MultipartFile image) {
-        if (!isMimeTypeAllowed(image.getContentType())) {
-            return ResponseEntity.badRequest().body("Tipo de archivo no permitido.");
-        }
-        try {
-            String imageUrl = imageService.storeImage(image);
-            return ResponseEntity.ok(imageUrl);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error al subir la imagen:" + e.getMessage());
-        }
-    }
- */
-/*
-    private boolean isMimeTypeAllowed(String mimeType) {
-        List<String> allowedMimeTypesList = Arrays.asList(allowedMimeTypes);
-        return allowedMimeTypesList.contains(mimeType);
-    }
- */
 }
