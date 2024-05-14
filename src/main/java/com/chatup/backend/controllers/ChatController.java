@@ -148,8 +148,24 @@ public class ChatController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @GetMapping("{chatId}/members")
+    @GetMapping("/{chatId}/details")
+    public ResponseEntity<Chat> getChatDetails(@PathVariable String chatId) {
+        Optional<Chat> chat = chatService.getChatById(chatId);
+        if (chat.isPresent()) {
+            return ResponseEntity.ok(chat.get());
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/{chatId}/members")
     public ResponseEntity<List<User>> getChatMembers(@PathVariable String chatId) {
-        return ResponseEntity.ok(chatService.getChatMembers(chatId));
+        List<User> members = chatService.getChatMembers(chatId);
+        if (members != null) {
+            return ResponseEntity.ok(members);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
     }
 }

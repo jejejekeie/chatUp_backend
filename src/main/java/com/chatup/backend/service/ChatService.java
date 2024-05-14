@@ -100,4 +100,8 @@ public class ChatService {
     public void deleteChat(String chatId) {
         chatRepository.deleteById(chatId);
     }
+
+    public Optional<Chat> getChatById(String chatId) {
+        return chatRepository.findChatById(chatId);
+    }
 }
