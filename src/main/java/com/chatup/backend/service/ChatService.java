@@ -63,12 +63,12 @@ public class ChatService {
     }
 
     public List<User> getChatMembers(String chatId) {
-        Set<String> members = chatRepository.findChatById(chatId).orElseThrow().getMembers();
+        Set<String> members = chatRepository.findChatByChatId(chatId).orElseThrow().getMembers();
         return userRepository.findUsersByEmail(members);
     }
 
     public Chat addUserToChat(String chatId, String userId) {
-        Chat chat = chatRepository.findChatById(chatId).orElseThrow(
+        Chat chat = chatRepository.findChatByChatId(chatId).orElseThrow(
                 () -> new IllegalArgumentException("Chat not found" + chatId + " not found")
         );
         chat.getMembers().add(userId);
@@ -77,7 +77,7 @@ public class ChatService {
 
     @CacheEvict(value = "chatsByMemberId", key = "#userId")
     public Chat removeUserFromChat(String chatId, String userId) {
-        Chat chat = chatRepository.findChatById(chatId).orElseThrow();
+        Chat chat = chatRepository.findChatByChatId(chatId).orElseThrow();
         chat.getMembers().remove(userId);
         return chatRepository.save(chat);
     }
@@ -98,10 +98,15 @@ public class ChatService {
     }
 
     public void deleteChat(String chatId) {
-        chatRepository.deleteById(chatId);
+        Optional<Chat> chatOptional = chatRepository.findChatByChatId(chatId);
+        if (chatOptional.isPresent()) {
+            chatRepository.deleteByChatId(chatId);
+        } else {
+            throw new IllegalArgumentException("Chat with id " + chatId + " not found");
+        }
     }
 
     public Optional<Chat> getChatById(String chatId) {
-        return chatRepository.findChatById(chatId);
+        return chatRepository.findChatByChatId(chatId);
     }
 }

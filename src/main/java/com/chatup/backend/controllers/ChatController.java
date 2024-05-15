@@ -125,8 +125,12 @@ public class ChatController {
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/{chatId}")
     public ResponseEntity<?> deleteChat(@PathVariable String chatId) {
-        chatService.deleteChat(chatId);
-        return ResponseEntity.ok("Chat eliminado correctamente");
+        try {
+            chatService.deleteChat(chatId);
+            return ResponseEntity.ok("Chat deleted successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @PreAuthorize("isAuthenticated()")
