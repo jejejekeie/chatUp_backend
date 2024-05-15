@@ -98,7 +98,12 @@ public class ChatService {
     }
 
     public void deleteChat(String chatId) {
-        chatRepository.deleteById(chatId);
+        Optional<Chat> chatOptional = chatRepository.findChatById(chatId);
+        if (chatOptional.isPresent()) {
+            chatRepository.deleteById(chatId);
+        } else {
+            throw new IllegalArgumentException("Chat with id " + chatId + " not found");
+        }
     }
 
     public Optional<Chat> getChatById(String chatId) {
