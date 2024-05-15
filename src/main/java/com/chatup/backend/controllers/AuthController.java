@@ -15,6 +15,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -99,4 +100,15 @@ public class AuthController {
         passwordResetService.invalidate(token);
         return ResponseEntity.ok("Password changed successfully");
     }
+
+
+    @PostMapping("/user/{userId}/token")
+    public ResponseEntity<?> updateUserToken(@PathVariable String userId, @RequestBody String token) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+        user.setFcmToken(token);
+        userRepository.save(user);
+        return ResponseEntity.ok("Token updated successfully");
+    }
+
 }

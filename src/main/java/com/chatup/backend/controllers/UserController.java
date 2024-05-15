@@ -30,6 +30,7 @@ public class UserController {
             return ResponseEntity.notFound().build();
         } else {
             User userDb = userRepository.findById(userId).get();
+            UserDTO userDto = convertToDTO(userDb);
             return ResponseEntity.ok(new User(userDb));
         }
     }
@@ -117,12 +118,15 @@ public class UserController {
     }
     //endregion
 
-    @PostMapping("/user/{userId}/token")
-    public ResponseEntity<?> updateUserToken(@PathVariable String userId, @RequestBody String token) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        user.setFcmToken(token);
-        userRepository.save(user);
-        return ResponseEntity.ok("Token updated successfully");
+    private UserDTO convertToDTO(User user) {
+        return UserDTO.builder()
+                .id(user.getId())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .fotoPerfil(user.getFotoPerfil())
+                .status(user.getStatus())
+                .build();
     }
+
 }
+
