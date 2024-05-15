@@ -64,7 +64,7 @@ public class ChatService {
 
     public List<User> getChatMembers(String chatId) {
         Set<String> members = chatRepository.findChatByChatId(chatId).orElseThrow().getMembers();
-        return userRepository.findUsersByEmail(members);
+        return userRepository.findUsersByIds(members);
     }
 
     public Chat addUserToChat(String chatId, String userId) {
