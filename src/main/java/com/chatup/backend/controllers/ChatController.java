@@ -1,6 +1,7 @@
 package com.chatup.backend.controllers;
 
 import com.chatup.backend.dtos.ChatPreviewDTO;
+import com.chatup.backend.dtos.UserDTO;
 import com.chatup.backend.models.*;
 import com.chatup.backend.service.ChatService;
 import com.chatup.backend.service.MensajeService;
@@ -25,6 +26,7 @@ public class ChatController {
     private final MensajeService messageService;
     private final ChatService chatService;
 
+    //region Process Message
     //@PreAuthorize("isAuthenticated()")
     @MessageMapping("/processMessage")
     public void processMessage(Mensaje chatMensaje) {
@@ -42,7 +44,9 @@ public class ChatController {
         Mensaje msjGuardado = messageService.save(chatMensaje);
         messagingTemplate.convertAndSend("/topic/chat/" + chatId, msjGuardado);
     }
+    //endregion
 
+    //region Get Messages
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/messages/{chatId}/{page}/{size}")
     public ResponseEntity<List<Mensaje>> getMensajesChatPaginated(
@@ -60,7 +64,9 @@ public class ChatController {
     ) {
         return ResponseEntity.ok(messageService.findMensajesChat(chatId));
     }
+    //endregion
 
+    //region Create/Delete Chat
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/newChat")
     public ResponseEntity<?> createChat(@RequestBody ChatCreationRequest request) {
@@ -82,6 +88,38 @@ public class ChatController {
     private boolean membersAreValid(Set<String> members) {
         return members != null && members.size() > 1;
     }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/{chatId}")
+    public ResponseEntity<?> deleteChat(@PathVariable String chatId) {
+        try {
+            chatService.deleteChat(chatId);
+            return ResponseEntity.ok("Chat deleted successfully.");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+    //endregion
+
+    //region Add/Remove User
+    @PreAuthorize("isAuthenticated()")
+    @PutMapping("{chatId}/addUser")
+    public ResponseEntity<Chat> addUserToChat(
+            @PathVariable String chatId,
+            @RequestBody String userId
+    ) {
+        return ResponseEntity.ok(chatService.addUserToChat(chatId, userId));
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("{chatId}/removeUser/{userId}")
+    public ResponseEntity<Chat> removeUserFromChat(
+            @PathVariable String chatId,
+            @PathVariable String userId
+    ) {
+        return ResponseEntity.ok(chatService.removeUserFromChat(chatId, userId));
+    }
+    //endregion
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("user/{userId}")
@@ -123,35 +161,6 @@ public class ChatController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("/{chatId}")
-    public ResponseEntity<?> deleteChat(@PathVariable String chatId) {
-        try {
-            chatService.deleteChat(chatId);
-            return ResponseEntity.ok("Chat deleted successfully.");
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
-        }
-    }
-
-    @PreAuthorize("isAuthenticated()")
-    @PutMapping("{chatId}/addUser")
-    public ResponseEntity<Chat> addUserToChat(
-            @PathVariable String chatId,
-            @RequestBody String userId
-    ) {
-        return ResponseEntity.ok(chatService.addUserToChat(chatId, userId));
-    }
-
-    @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("{chatId}/removeUser/{userId}")
-    public ResponseEntity<Chat> removeUserFromChat(
-            @PathVariable String chatId,
-            @PathVariable String userId
-    ) {
-        return ResponseEntity.ok(chatService.removeUserFromChat(chatId, userId));
-    }
-
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/{chatId}/details")
     public ResponseEntity<Chat> getChatDetails(@PathVariable String chatId) {
         Optional<Chat> chat = chatService.getChatById(chatId);
@@ -164,8 +173,8 @@ public class ChatController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{chatId}/members")
-    public ResponseEntity<List<User>> getChatMembers(@PathVariable String chatId) {
-        List<User> members = chatService.getChatMembers(chatId);
+    public ResponseEntity<List<UserDTO>> getChatMembers(@PathVariable String chatId) {
+        List<UserDTO> members = chatService.getChatMembers(chatId);
         if (members != null) {
             return ResponseEntity.ok(members);
         } else {

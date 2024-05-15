@@ -44,7 +44,6 @@ public class UserController {
         return ResponseEntity.ok(userDTOS);
     }
 
-
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/users")
     public ResponseEntity<?> getUsers() {
@@ -62,6 +61,7 @@ public class UserController {
         return ResponseEntity.ok(userDTOS);
     }
 
+    //region Contacts
     @PreAuthorize("isAuthenticated()")
     @PutMapping("/addContact")
     public ResponseEntity<?> AddContact(@RequestParam("userEmail") String userEmail, @RequestParam("contactsEmail") String contactEmail) {
@@ -115,6 +115,7 @@ public class UserController {
         User user = userOptional.get();
         return ResponseEntity.ok(user.getContacts());
     }
+    //endregion
 
     @PostMapping("/user/{userId}/token")
     public ResponseEntity<?> updateUserToken(@PathVariable String userId, @RequestBody String token) {

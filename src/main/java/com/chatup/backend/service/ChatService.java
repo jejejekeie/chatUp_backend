@@ -1,6 +1,7 @@
 package com.chatup.backend.service;
 
 import com.chatup.backend.dtos.ChatPreviewDTO;
+import com.chatup.backend.dtos.UserDTO;
 import com.chatup.backend.models.Chat;
 import com.chatup.backend.models.Mensaje;
 import com.chatup.backend.models.User;
@@ -12,6 +13,7 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class ChatService {
@@ -62,9 +64,18 @@ public class ChatService {
         return chatRepository.findChatsByMemberId(memberId);
     }
 
-    public List<User> getChatMembers(String chatId) {
+    public List<UserDTO> getChatMembers(String chatId) {
         Set<String> members = chatRepository.findChatByChatId(chatId).orElseThrow().getMembers();
-        return userRepository.findUsersByIds(members);
+        List<User> users = userRepository.findUsersByIds(members);
+        return users.stream()
+                .map(user -> UserDTO.builder()
+                        .id(user.getId())
+                        .username(user.getUsername())
+                        .email(user.getEmail())
+                        .fotoPerfil(user.getFotoPerfil())
+                        .status(user.getStatus())
+                        .build())
+                .collect(Collectors.toList());
     }
 
     public Chat addUserToChat(String chatId, String userId) {
