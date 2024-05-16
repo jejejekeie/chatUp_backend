@@ -34,7 +34,11 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:4200","http://localhost:4200/chat", "http://localhost:4200/chat/**"));
+        configuration.setAllowedOrigins(Arrays.asList(
+                "http://localhost:4200",
+                "http://localhost:4200/chat",
+                "http://localhost:4200/chat/**",
+                "https://effortless-cucurucho-949d34.netlify.app" ));
         //configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedMethods(List.of("*"));
         //configuration.setAllowedHeaders(Arrays.asList("Authorization", "Cache-Control", "Content-Type"));

@@ -24,10 +24,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        registry.addEndpoint("/api/ws").setAllowedOrigins("http://localhost:4200");
-        registry.addEndpoint("/api/ws").setAllowedOrigins("http://localhost:4200").withSockJS();
-        registry.addEndpoint("/ws").setAllowedOrigins("http://localhost:4200");
-        registry.addEndpoint("/ws").setAllowedOrigins("http://localhost:4200").withSockJS();
+        registry.addEndpoint("/api/ws").setAllowedOrigins("http://localhost:4200", "https://effortless-cucurucho-949d34.netlify.app");
+        registry.addEndpoint("/api/ws").setAllowedOrigins("http://localhost:4200", "https://effortless-cucurucho-949d34.netlify.app").withSockJS();
+        registry.addEndpoint("/ws").setAllowedOrigins("http://localhost:4200", "https://effortless-cucurucho-949d34.netlify.app");
+        registry.addEndpoint("/ws").setAllowedOrigins("http://localhost:4200", "https://effortless-cucurucho-949d34.netlify.app").withSockJS();
     }
 
     @Override
