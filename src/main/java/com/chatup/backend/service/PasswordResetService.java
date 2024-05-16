@@ -36,9 +36,8 @@ public class PasswordResetService {
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setTo(userEmail);
         mailMessage.setSubject("Password Reset Request");
-        //TODO: CAMBIAR EL LINK DE LA PAGINA WEB DEL FRONTEND
         mailMessage.setText("To reset your password, click the link below:\n"
-                + "https://chatup-backend-i6fa.onrender.com/api/auth/change-password?token=" + token +
+                + "https://effortless-cucurucho-949d34.netlify.app/change-password?token=" + token +
                     "\n\nIf you did not request a password reset, please ignore this email.");
         javaMailSender.send(mailMessage);
     }
