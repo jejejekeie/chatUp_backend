@@ -93,14 +93,16 @@ public class AuthController {
         }
 
         PasswordResetToken prt = passwordResetService.getTokenDetails(token);
-        User user = userRepository.findByEmail(prt.getEmail()).get();
+        User user = userRepository.findByEmail(prt.getEmail()).orElse(null);
+        if (user == null) {
+            return ResponseEntity.badRequest().body("User not found");
+        }
         user.setHashPassword(passwordEncoder.encode(password));
         userRepository.save(user);
 
         passwordResetService.invalidate(token);
         return ResponseEntity.ok("Password changed successfully");
     }
-
 
     @PostMapping("/user/{userId}/token")
     public ResponseEntity<?> updateUserToken(@PathVariable String userId, @RequestBody String token) {
