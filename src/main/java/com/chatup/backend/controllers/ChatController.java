@@ -106,21 +106,31 @@ public class ChatController {
     @PutMapping("{chatId}/addUser")
     public ResponseEntity<Chat> addUserToChat(
             @PathVariable String chatId,
-            @RequestBody String userId
+            @RequestBody Map<String, String> user
     ) {
+        String userId = user.get("userId");
+        if (userId == null || userId.isEmpty()) {
+            return ResponseEntity.badRequest().body(null);
+        }
         return ResponseEntity.ok(chatService.addUserToChat(chatId, userId));
     }
 
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("{chatId}/removeUser/{userId}")
-    public ResponseEntity<Chat> removeUserFromChat(
+    public ResponseEntity<String> removeUserFromChat(
             @PathVariable String chatId,
             @PathVariable String userId
     ) {
-        return ResponseEntity.ok(chatService.removeUserFromChat(chatId, userId));
+        try {
+            chatService.removeUserFromChat(chatId, userId);
+            return ResponseEntity.ok("User removed sucessfully.");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User or chat not found");
+        }
     }
     //endregion
 
+    //region GetChat
     @PreAuthorize("isAuthenticated()")
     @GetMapping("user/{userId}")
     public ResponseEntity<List<Chat>> getChatsByUser(@PathVariable String userId) {
@@ -164,11 +174,7 @@ public class ChatController {
     @GetMapping("/{chatId}/details")
     public ResponseEntity<Chat> getChatDetails(@PathVariable String chatId) {
         Optional<Chat> chat = chatService.getChatById(chatId);
-        if (chat.isPresent()) {
-            return ResponseEntity.ok(chat.get());
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        return chat.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -181,4 +187,5 @@ public class ChatController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
     }
+    //endregion
 }
