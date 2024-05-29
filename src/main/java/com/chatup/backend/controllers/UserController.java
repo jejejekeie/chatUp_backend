@@ -127,6 +127,5 @@ public class UserController {
                 .status(user.getStatus())
                 .build();
     }
-
 }
 

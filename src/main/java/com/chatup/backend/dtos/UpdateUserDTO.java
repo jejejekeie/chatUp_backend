@@ -12,6 +12,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "Usuario")
 public class UpdateUserDTO {
     String username;
-    String status;
+    String email;
     String fotoPerfil;
 }

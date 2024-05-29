@@ -7,7 +7,6 @@ import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import javax.servlet.http.HttpServletResponse;
 
-
 @Configuration
 @EnableMongoRepositories(basePackages = "com.chatup.backend.repositories")
 public class WebConfig implements WebMvcConfigurer {
