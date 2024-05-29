@@ -9,7 +9,9 @@ import com.chatup.backend.dtos.UserRegisterDTO;
 import com.chatup.backend.models.User;
 import com.chatup.backend.service.CustomUserDetailService;
 import com.chatup.backend.service.PasswordResetService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -104,13 +106,28 @@ public class AuthController {
         return ResponseEntity.ok("Password changed successfully");
     }
 
-    @PostMapping("/user/{userId}/token")
-    public ResponseEntity<?> updateUserToken(@PathVariable String userId, @RequestBody String token) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        user.setFcmToken(token);
-        userRepository.save(user);
-        return ResponseEntity.ok("Token updated successfully");
-    }
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(HttpServletRequest request) {
+        String authorizationHeader = request.getHeader("Authorization");
+        String token = null;
+        String username = null;
 
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            token = authorizationHeader.substring(7);
+            try {
+                username = jwtTokenUtil.extractUsername(token);
+            } catch (Exception e) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid token");
+            }
+        }
+
+        if (token != null && username != null) {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+            if (jwtTokenUtil.validateToken(token, userDetails)) {
+                String newToken = jwtTokenUtil.generateToken(userDetails);
+                return ResponseEntity.ok(new AuthenticationResponse(newToken, userRepository.findByEmail(username).get().getId()));
+            }
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Cannot refresh token");
+    }
 }
