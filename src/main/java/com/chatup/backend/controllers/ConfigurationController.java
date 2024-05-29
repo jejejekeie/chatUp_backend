@@ -48,7 +48,7 @@ public class ConfigurationController {
     @PreAuthorize("isAuthenticated()")
     @PutMapping("/update/{userId}")
     public ResponseEntity<?> updateUser(@PathVariable String userId, UpdateUserDTO updateUserDTO,
-                                        @RequestParam("fotoPerfil") MultipartFile fotoPerfil) {
+                                        @RequestParam(value = "fotoPerfil", required = false) MultipartFile fotoPerfil) {
         return userRepository.findById(userId)
                 .map(user -> {
                     try {
