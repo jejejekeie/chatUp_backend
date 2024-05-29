@@ -3,6 +3,8 @@ package com.chatup.backend.dtos;
 import lombok.*;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.util.Optional;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -11,7 +13,6 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Setter
 @Document(collection = "Usuario")
 public class UpdateUserDTO {
-    String username;
-    String email;
-    String fotoPerfil;
+    private Optional<String> username = Optional.empty();
+    private Optional<String> email = Optional.empty();
 }

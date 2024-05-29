@@ -23,7 +23,7 @@ public class ImageService {
             throw new IOException("Failed to store empty file.");
         }
         String extension = getFileExtension(file.getOriginalFilename());
-        String filename = userId + "_profile" + extension;
+        String filename = userId + "_profile." + extension;
         ObjectId fileId = gridFsTemplate.store(file.getInputStream(), filename, file.getContentType());
         return fileId.toString();
     }
@@ -39,11 +39,5 @@ public class ImageService {
             return "";
         }
         return filename.substring(filename.lastIndexOf('.') + 1);
-    }
-
-    public boolean isValidFile(MultipartFile file) {
-        String contentType = file.getContentType();
-        long size = file.getSize();
-        return (contentType != null && (contentType.equals("image/jpeg") || contentType.equals("image/png")) && size <= 200_000_000);
     }
 }
