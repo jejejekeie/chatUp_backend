@@ -4,9 +4,13 @@ import com.chatup.backend.dtos.UpdateUserDTO;
 import com.chatup.backend.dtos.UploadImageResponseDTO;
 import com.chatup.backend.repositories.UserRepository;
 import com.chatup.backend.service.ImageService;
+import com.mongodb.client.gridfs.model.GridFSFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.Resource;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.gridfs.GridFsTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,13 +26,14 @@ import java.util.Optional;
 @RequestMapping("/configuration")
 public class ConfigurationController {
     private static final Logger logger = LoggerFactory.getLogger(ConfigurationController.class);
-
+    private final GridFsTemplate gridFsTemplate;
     private final UserRepository userRepository;
     private final ImageService imageService;
 
-    public ConfigurationController(UserRepository userRepository, ImageService imageService) {
+    public ConfigurationController(UserRepository userRepository, ImageService imageService, GridFsTemplate gridFsTemplate) {
         this.userRepository = userRepository;
         this.imageService = imageService;
+        this.gridFsTemplate = gridFsTemplate;
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -42,11 +47,23 @@ public class ConfigurationController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/image/{fileId}")
-    public ResponseEntity<Resource> getImage(@PathVariable String fileId) {
-        return Optional.ofNullable(imageService.loadImage(fileId))
-                .map(file -> ResponseEntity.ok().contentType(MediaType.parseMediaType("image/jpeg")).body(file))
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/image/{userId}")
+    public ResponseEntity<Resource> getImage(@PathVariable String userId) {
+        Resource fileResource = imageService.loadImage(userId);
+        if (fileResource == null) {
+            logger.warn("No image found for user ID: {}", userId);
+            return ResponseEntity.notFound().build();
+        }
+
+        try {
+            String contentType = getResourceContentType(userId);
+            return ResponseEntity.ok()
+                    .contentType(MediaType.parseMediaType(contentType))
+                    .body(fileResource);
+        } catch (Exception e) {
+            logger.error("Failed to load image for user ID: {}", userId, e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @PutMapping("/update/{userId}")
@@ -63,11 +80,11 @@ public class ConfigurationController {
                 .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + userId));
     }
 
-    @PostMapping("/uploadImage/{userId}")
+    @PutMapping("/uploadImage/{userId}")
     public ResponseEntity<UploadImageResponseDTO> uploadImage(@PathVariable String userId, @RequestParam("file") MultipartFile file) {
         try {
             if (!file.isEmpty()) {
-                String fileId = imageService.storeImage(userId, file);
+                String fileId = imageService.storeOrUpdateImage(userId, file);
                 return ResponseEntity.ok(new UploadImageResponseDTO("Image uploaded successfully", fileId));
             } else {
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UploadImageResponseDTO("File is empty", null));
@@ -76,5 +93,12 @@ public class ConfigurationController {
             logger.error("Error uploading image for user {}", userId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
+    }
+
+    public String getResourceContentType(String userId) {
+        GridFSFile file = gridFsTemplate.findOne(new Query(Criteria.where("filename").is(userId)));
+        if (file == null || file.getMetadata() == null) return MediaType.APPLICATION_OCTET_STREAM_VALUE;
+
+        return file.getMetadata().get("contentType", String.class);
     }
 }
