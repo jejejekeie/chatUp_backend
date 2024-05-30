@@ -59,22 +59,20 @@ public class AuthController {
 
     @PostMapping("/login")
     public ResponseEntity<?> loginUser(@RequestBody UserLoginDTO authenticationRequest) throws Exception {
-
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(authenticationRequest.getEmail(), authenticationRequest.getPassword())
             );
+            final UserDetails userDetails = userDetailsService
+                    .loadUserByUsername(authenticationRequest.getEmail());
+
+            final String jwt = jwtTokenUtil.generateToken(userDetails);
+            final String userId = userRepository.findByEmail(authenticationRequest.getEmail()).get().getId();
+
+            return ResponseEntity.ok(new AuthenticationResponse(jwt, userId));
         } catch (BadCredentialsException e) {
             throw new Exception("Incorrect username or password", e);
         }
-
-        final UserDetails userDetails = userDetailsService
-                .loadUserByUsername(authenticationRequest.getEmail());
-
-        final String jwt = jwtTokenUtil.generateToken(userDetails);
-        final String userId = userRepository.findByEmail(authenticationRequest.getEmail()).get().getId();
-
-        return ResponseEntity.ok(new AuthenticationResponse(jwt, userId));
     }
     //endregion
 
@@ -84,7 +82,6 @@ public class AuthController {
         if (userRepository.findByEmail(email).isEmpty()) {
             return ResponseEntity.badRequest().body("User not found");
         }
-
         passwordResetService.generatePasswordResetToken(email);
         return ResponseEntity.ok("Password reset link sent to email");
     }
@@ -95,7 +92,6 @@ public class AuthController {
         if (!passwordResetService.validatePasswordResetToken(token)) {
             return ResponseEntity.badRequest().body("Invalid token");
         }
-
         PasswordResetToken prt = passwordResetService.getTokenDetails(token);
         User user = userRepository.findByEmail(prt.getEmail()).orElse(null);
         if (user == null) {
