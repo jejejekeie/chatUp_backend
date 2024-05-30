@@ -1,7 +1,7 @@
 package com.chatup.backend.controllers;
 
 import com.chatup.backend.dtos.UpdateUserDTO;
-import com.chatup.backend.models.User;
+import com.chatup.backend.dtos.UploadImageResponseDTO;
 import com.chatup.backend.repositories.UserRepository;
 import com.chatup.backend.service.ImageService;
 import org.slf4j.Logger;
@@ -64,13 +64,13 @@ public class ConfigurationController {
     }
 
     @PostMapping("/uploadImage/{userId}")
-    public ResponseEntity<String> uploadImage(@PathVariable String userId, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<UploadImageResponseDTO> uploadImage(@PathVariable String userId, @RequestParam("file") MultipartFile file) {
         try {
             if (!file.isEmpty()) {
                 String fileId = imageService.storeImage(userId, file);
-                return ResponseEntity.ok("Image uploaded successfully with ID: " + fileId);
+                return ResponseEntity.ok(new UploadImageResponseDTO("Image uploaded successfully", fileId));
             } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("File is empty");
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UploadImageResponseDTO("File is empty", null));
             }
         } catch (IOException e) {
             logger.error("Error uploading image for user {}", userId, e);

@@ -10,8 +10,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.util.Set;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
+
 @Builder
 @Document(collection = "Chat")
 public class Chat {
