@@ -43,10 +43,7 @@ public class MensajeService {
     public List<Mensaje> findMensajesChat(String chatId) {
     List<Mensaje> messages = mensajeRepository.findByChatId(chatId);
     messages.forEach(msg -> {
-        User user = userRepository.findById(msg.getSender()).orElse(null);
-        if (user != null) {
-            msg.setSenderUsername(user.getUsername());
-        }
+        userRepository.findById(msg.getSender()).ifPresent(user -> msg.setSenderUsername(user.getUsername()));
     });
     return messages;
     }

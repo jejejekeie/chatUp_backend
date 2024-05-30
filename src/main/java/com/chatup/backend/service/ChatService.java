@@ -28,9 +28,16 @@ public class ChatService {
 
     }
 
+    //region Create/Delete Chat
     @CachePut(value = "chatsByMemberId", key = "#chat.members")
     public Chat createChat(Chat chat) {
         return chatRepository.save(chat);
+    }
+
+    private String createChatId(Set<String> members) {
+        List<String> sortedMembers = new ArrayList<>(members);
+        Collections.sort(sortedMembers);
+        return String.join("-", sortedMembers);
     }
 
     public Optional<String> getChatId (
@@ -49,20 +56,32 @@ public class ChatService {
                 });
     }
 
-    private String createChatId(Set<String> members) {
-        List<String> sortedMembers = new ArrayList<>(members);
-        Collections.sort(sortedMembers);
-        return String.join("-", sortedMembers);
+    public void deleteChat(String chatId) {
+        Optional<Chat> chatOptional = chatRepository.findChatByChatId(chatId);
+        if (chatOptional.isPresent()) {
+            chatRepository.deleteByChatId(chatId);
+        } else {
+            throw new IllegalArgumentException("Chat with id " + chatId + " not found");
+        }
+    }
+    //endregion
+
+    //region Add/Remove Member
+    public Chat addUserToChat(String chatId, String userId) {
+        Chat chat = chatRepository.findChatByChatId(chatId).orElseThrow(
+                () -> new IllegalArgumentException("Chat not found" + chatId + " not found")
+        );
+        chat.getMembers().add(userId);
+        return chatRepository.save(chat);
     }
 
-    public List<Chat> findChatsByName(String chatName) {
-        return chatRepository.findChatsByName(chatName);
+    @CacheEvict(value = "chatsByMemberId", key = "#userId")
+    public void removeUserFromChat(String chatId, String userId) {
+        Chat chat = chatRepository.findChatByChatId(chatId).orElseThrow();
+        chat.getMembers().remove(userId);
+        chatRepository.save(chat);
     }
-
-    @Cacheable(value = "chatsByMemberId", key = "#memberId")
-    public List<Chat> getChatsByMemberId(String memberId) {
-        return chatRepository.findChatsByMemberId(memberId);
-    }
+    //endregion
 
     public List<UserDTO> getChatMembers(String chatId) {
         Set<String> members = chatRepository.findChatByChatId(chatId).orElseThrow().getMembers();
@@ -78,20 +97,20 @@ public class ChatService {
                 .collect(Collectors.toList());
     }
 
-    public Chat addUserToChat(String chatId, String userId) {
-        Chat chat = chatRepository.findChatByChatId(chatId).orElseThrow(
-                () -> new IllegalArgumentException("Chat not found" + chatId + " not found")
-        );
-        chat.getMembers().add(userId);
-        return chatRepository.save(chat);
+    //region Get Chats
+    public List<Chat> findChatsByName(String chatName) {
+        return chatRepository.findChatsByName(chatName);
     }
 
-    @CacheEvict(value = "chatsByMemberId", key = "#userId")
-    public Chat removeUserFromChat(String chatId, String userId) {
-        Chat chat = chatRepository.findChatByChatId(chatId).orElseThrow();
-        chat.getMembers().remove(userId);
-        return chatRepository.save(chat);
+    @Cacheable(value = "chatsByMemberId", key = "#memberId")
+    public List<Chat> getChatsByMemberId(String memberId) {
+        return chatRepository.findChatsByMemberId(memberId);
     }
+
+    public Optional<Chat> getChatById(String chatId) {
+        return chatRepository.findChatByChatId(chatId);
+    }
+    //endregion
 
     public List<ChatPreviewDTO> getChatPreviews(String userId) {
         List<Chat> chats = chatRepository.findChatsByMemberId(userId);
@@ -106,18 +125,5 @@ public class ChatService {
             ));
         }
         return chatPreviews;
-    }
-
-    public void deleteChat(String chatId) {
-        Optional<Chat> chatOptional = chatRepository.findChatByChatId(chatId);
-        if (chatOptional.isPresent()) {
-            chatRepository.deleteByChatId(chatId);
-        } else {
-            throw new IllegalArgumentException("Chat with id " + chatId + " not found");
-        }
-    }
-
-    public Optional<Chat> getChatById(String chatId) {
-        return chatRepository.findChatByChatId(chatId);
     }
 }

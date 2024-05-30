@@ -141,18 +141,7 @@ public class ChatController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/previews")
     public ResponseEntity<List<ChatPreviewDTO>> getChatPreviews(@RequestParam String userId) {
-        List<ChatPreviewDTO> chatPreviews = new ArrayList<>();
-        List<Chat> chats = chatService.getChatsByMemberId(userId);
-        for (Chat chat : chats) {
-            Mensaje lastMessage = messageService.findLastMessageByChatId(chat.getChatId());
-            ChatPreviewDTO chatPreview = new ChatPreviewDTO(
-                    chat.getChatId(),
-                    chat.getName(),
-                    chat.getChatType(),
-                    lastMessage
-            );
-            chatPreviews.add(chatPreview);
-        }
+        List<ChatPreviewDTO> chatPreviews = chatService.getChatPreviews(userId);
         return ResponseEntity.ok(chatPreviews);
     }
 

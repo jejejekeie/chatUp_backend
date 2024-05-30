@@ -55,23 +55,6 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .cors(Customizer.withDefaults())
-                /*
-                        cors -> {
-                            CorsConfigurationSource source = request -> {
-                                CorsConfiguration config = new CorsConfiguration();
-                                config.setAllowedOrigins(List.of("http://localhost:4200"));
-                                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH", "TRACE", "CONNECT"));
-                                config.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type", "Origin", "Accept", "X-Requested-With"));
-                                config.setAllowCredentials(true);
-
-                                UrlBasedCorsConfigurationSource urlsource = new UrlBasedCorsConfigurationSource();
-                                urlsource.registerCorsConfiguration("/**", config);
-                                return config;
-                            };
-                            cors.configurationSource(source);
-                        }
-                )//AbstractHttpConfigurer::disable)
-                */
                 .sessionManagement((sessionManagement) -> sessionManagement
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )

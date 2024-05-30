@@ -17,7 +17,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -42,6 +41,7 @@ public class AuthController {
         this.passwordResetService = passwordResetService;
     }
 
+    //region Login/signup
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody UserRegisterDTO registerDTO) {
         if(userRepository.findByEmail(registerDTO.getEmail()).isPresent()) {
@@ -76,7 +76,9 @@ public class AuthController {
 
         return ResponseEntity.ok(new AuthenticationResponse(jwt, userId));
     }
+    //endregion
 
+    //region Password management
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestParam("email") String email) {
         if (userRepository.findByEmail(email).isEmpty()) {
@@ -105,6 +107,7 @@ public class AuthController {
         passwordResetService.invalidate(token);
         return ResponseEntity.ok("Password changed successfully");
     }
+    //endregion
 
     @PostMapping("/refresh-token")
     public ResponseEntity<?> refreshToken(HttpServletRequest request) {

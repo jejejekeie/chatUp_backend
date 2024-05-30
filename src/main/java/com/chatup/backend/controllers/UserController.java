@@ -62,62 +62,6 @@ public class UserController {
         return ResponseEntity.ok(userDTOS);
     }
 
-    //region Contacts
-    @PreAuthorize("isAuthenticated()")
-    @PutMapping("/addContact")
-    public ResponseEntity<?> AddContact(@RequestParam("userEmail") String userEmail, @RequestParam("contactsEmail") String contactEmail) {
-        if (userEmail == null || contactEmail == null) {
-            return ResponseEntity.badRequest().body("Invalid request: userEmail or contactEmail is null");
-        }
-
-        Optional<User> userOptional = userRepository.findByEmail(userEmail);
-        if (userOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("User not found");
-        }
-
-        User user = userOptional.get();
-        user.getContacts().add(contactEmail);
-        userRepository.save(user);
-
-        return ResponseEntity.ok("Contact added successfully");
-    }
-
-    @PreAuthorize("isAuthenticated()")
-    @DeleteMapping("/deleteContact/")
-    public ResponseEntity<?> DeleteContact(@RequestParam("contactEmail") String contactEmail, @RequestParam("userEmail") String userEmail) {
-        if (userEmail == null || contactEmail == null) {
-            return ResponseEntity.badRequest().body("Invalid request: userEmail or contactEmail is null");
-        }
-
-        Optional<User> userOptional = userRepository.findByEmail(userEmail);
-        if (userOptional.isEmpty()) {
-            return ResponseEntity.badRequest().body("User not found");
-        }
-
-        User user = userOptional.get();
-        user.getContacts().remove(contactEmail);
-        userRepository.save(user);
-
-        return ResponseEntity.ok("Contact deleted successfully");
-    }
-
-    @PreAuthorize("isAuthenticated()")
-    @GetMapping("/contacts/{email}")
-    public ResponseEntity<?> getContacts(@PathVariable String email) {
-        if (email == null || email.trim().isEmpty()) {
-            return ResponseEntity.badRequest().body("Invalid request: Email is null or empty");
-        }
-
-        Optional<User> userOptional = userRepository.findByEmail(email);
-        if (userOptional.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        User user = userOptional.get();
-        return ResponseEntity.ok(user.getContacts());
-    }
-    //endregion
-
     private UserDTO convertToDTO(User user) {
         return UserDTO.builder()
                 .id(user.getId())
