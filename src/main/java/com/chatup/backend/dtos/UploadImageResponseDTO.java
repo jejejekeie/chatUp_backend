@@ -10,11 +10,11 @@ import lombok.Setter;
 @NoArgsConstructor
 public class UploadImageResponseDTO {
     private String message;
-    private String fileId;
+    private String userId;
 
     public UploadImageResponseDTO(String message, String fileId) {
         this.message = message;
-        this.fileId = fileId;
+        this.userId = userId;
     }
 }
 

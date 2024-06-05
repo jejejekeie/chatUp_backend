@@ -63,6 +63,7 @@ public class ConfigurationController {
     }
     //endregion
 
+    //region Image Upload/Retrieval
     @GetMapping("/image/{userId}")
     public ResponseEntity<Resource> getImage(@PathVariable String userId) {
         Resource fileResource = imageService.loadImage(userId);
@@ -90,8 +91,8 @@ public class ConfigurationController {
             return ResponseEntity.badRequest().body(new UploadImageResponseDTO("File is empty", null));
         }
         try {
-            String fileId = imageService.storeOrUpdateImage(userId, file);
-            return ResponseEntity.ok(new UploadImageResponseDTO("Image uploaded successfully", fileId));
+            imageService.storeOrUpdateImage(userId, file);
+            return ResponseEntity.ok(new UploadImageResponseDTO("Image uploaded successfully", userId));
         } catch (IOException e) {
             logger.error("Error uploading image for user {}", userId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new UploadImageResponseDTO("Error uploading image", null));
@@ -104,4 +105,5 @@ public class ConfigurationController {
 
         return file.getMetadata().get("contentType", String.class);
     }
+    //endregion
 }
