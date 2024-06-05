@@ -6,6 +6,8 @@ import com.chatup.backend.models.*;
 import com.chatup.backend.service.ChatService;
 import com.chatup.backend.service.MensajeService;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,24 +27,31 @@ public class ChatController {
     private final SimpMessagingTemplate messagingTemplate;
     private final MensajeService messageService;
     private final ChatService chatService;
+    private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
 
     //region Process Message
     //@PreAuthorize("isAuthenticated()")
     @MessageMapping("/processMessage")
     public void processMessage(Mensaje chatMensaje) {
+        logger.info("Received message: {}", chatMensaje);
         Mensaje msjGuardado = messageService.save(chatMensaje);
+        logger.info("Saved message: {}", msjGuardado);
         messagingTemplate.convertAndSendToUser(
                 chatMensaje.getSender(), "/queue/messages",
                 msjGuardado
         );
+        logger.info("Message sent to user {}: {}", chatMensaje.getSender(), msjGuardado);
     }
 
     //@PreAuthorize("isAuthenticated()")
     @MessageMapping("processMessage/{chatId}")
     public void processMessage(@DestinationVariable String chatId, Mensaje chatMensaje) {
+        logger.info("Received message for chatId {}: {}", chatId, chatMensaje);
         chatMensaje.setChatId(chatId);
+        logger.info("Saved message: {}", chatMensaje);
         Mensaje msjGuardado = messageService.save(chatMensaje);
         messagingTemplate.convertAndSend("/topic/chat/" + chatId, msjGuardado);
+        logger.info("Message sent to topic /topic/chat/{}: {}", chatId, msjGuardado);
     }
     //endregion
 
