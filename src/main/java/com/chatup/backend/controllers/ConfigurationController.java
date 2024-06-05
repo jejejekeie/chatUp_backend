@@ -91,7 +91,7 @@ public class ConfigurationController {
             return ResponseEntity.badRequest().body(new UploadImageResponseDTO("File is empty", null));
         }
         try {
-            imageService.storeOrUpdateImage(userId, file);
+            String fileId = imageService.storeOrUpdateImage(userId, file);
             return ResponseEntity.ok(new UploadImageResponseDTO("Image uploaded successfully", userId));
         } catch (IOException e) {
             logger.error("Error uploading image for user {}", userId, e);

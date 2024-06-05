@@ -37,12 +37,14 @@ public class ImageService {
         ImageIO.write(resizedImage, "jpeg", os);
         ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
 
-        gridFsTemplate.delete(new Query(Criteria.where("filename").is(userId)));
+        gridFsTemplate.delete(new Query(Criteria.where("filename").regex("^" + userId + ".*")));
+        String extension = file.getContentType().split("/")[1];
+        String filename = userId + "." + extension;
 
         DBObject metadata = new BasicDBObject();
         metadata.put("contentType", file.getContentType());
 
-        ObjectId fileId = gridFsTemplate.store(is, userId, metadata);
+        ObjectId fileId = gridFsTemplate.store(is, filename, metadata);
         return fileId.toString();
     }
 
