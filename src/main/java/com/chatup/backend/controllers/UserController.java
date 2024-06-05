@@ -26,13 +26,11 @@ public class UserController {
     public ResponseEntity<?> getUser(@PathVariable String userId) {
         if (userId == null || userId.isEmpty()) {
             return ResponseEntity.badRequest().body("Invalid request: userId is null");
-        } else if (userRepository.findById(userId).isEmpty()) {
-            return ResponseEntity.notFound().build();
-        } else {
-            User userDb = userRepository.findById(userId).get();
-            UserDTO userDto = convertToDTO(userDb);
-            return ResponseEntity.ok(new User(userDb));
         }
+        return userRepository.findById(userId)
+                .map(this::convertToDTO)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.notFound().build());
     }
 
     @PreAuthorize("isAuthenticated()")
