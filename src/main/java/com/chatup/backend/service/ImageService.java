@@ -37,11 +37,12 @@ public class ImageService {
         ImageIO.write(resizedImage, "jpeg", os);
         ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
 
-        gridFsTemplate.delete(new Query(Criteria.where("filename").regex("^" + userId + ".*")));
+        gridFsTemplate.delete(new Query(Criteria.where("metadata.userId").is(userId)));
         String extension = file.getContentType().split("/")[1];
         String filename = userId + "." + extension;
 
         DBObject metadata = new BasicDBObject();
+        metadata.put("userId", userId);
         metadata.put("contentType", file.getContentType());
 
         ObjectId fileId = gridFsTemplate.store(is, filename, metadata);
@@ -61,8 +62,9 @@ public class ImageService {
     }
 
     public Resource loadImage(String userId) {
-        GridFSFile file = gridFsTemplate.findOne(new Query(Criteria.where("filename").is(userId)));
+        GridFSFile file = gridFsTemplate.findOne(new Query(Criteria.where("metadata.userId").is(userId)));
         if (file == null) return null;
         return gridFsTemplate.getResource(file);
     }
+
 }
