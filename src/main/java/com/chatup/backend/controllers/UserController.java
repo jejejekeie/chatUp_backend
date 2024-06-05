@@ -45,20 +45,12 @@ public class UserController {
         return ResponseEntity.ok(userDTOS);
     }
 
-    @PreAuthorize("isAuthenticated()")
     @GetMapping("/users")
     public ResponseEntity<?> getUsers() {
         List<User> users = userRepository.findAll();
-        List<UserDTO> userDTOS = new ArrayList<>();
-        for (User user : users) {
-            UserDTO dto = UserDTO.builder()
-                    .username(user.getUsername())
-                    .email(user.getEmail())
-                    .fotoPerfil(user.getFotoPerfil())
-                    .status(user.getStatus())
-                    .build();
-            userDTOS.add(dto);
-        }
+        List<UserDTO> userDTOS = users.stream()
+                .map(this::convertToDTO)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(userDTOS);
     }
 

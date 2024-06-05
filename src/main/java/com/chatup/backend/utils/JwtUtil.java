@@ -5,6 +5,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -18,6 +19,15 @@ public class JwtUtil {
 
     @Value("${jwt.expiration}")
     private long expiration;
+
+    public UserDetails getUserDetailsFromToken(String token, UserDetailsService userDetailsService) {
+        String username = extractUsername(token);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+        if (validateToken(token, userDetails)) {
+            return userDetails;
+        }
+        return null;
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
