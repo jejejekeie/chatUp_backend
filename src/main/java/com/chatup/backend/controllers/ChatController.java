@@ -113,15 +113,20 @@ public class ChatController {
     //region Add/Remove User
     @PreAuthorize("isAuthenticated()")
     @PutMapping("{chatId}/addUser")
-    public ResponseEntity<Chat> addUserToChat(
+    public ResponseEntity<?> addUserToChat(
             @PathVariable String chatId,
             @RequestBody Map<String, String> user
     ) {
         String userId = user.get("userId");
         if (userId == null || userId.isEmpty()) {
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body("User ID is missing");
         }
-        return ResponseEntity.ok().body(chatService.addUserToChat(chatId, userId));
+        try {
+            Chat updatedChat = chatService.addUserToChat(chatId, userId);
+            return ResponseEntity.ok(updatedChat);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
     }
 
     @PreAuthorize("isAuthenticated()")

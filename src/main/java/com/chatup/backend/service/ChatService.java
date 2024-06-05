@@ -63,6 +63,9 @@ public class ChatService {
         userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
 
+        if (chat.getMembers().contains(userId)) {
+            throw new IllegalArgumentException("User already a member of the chat");
+        }
         chat.getMembers().add(userId);
         return chatRepository.save(chat);
     }
