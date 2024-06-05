@@ -45,12 +45,10 @@ public class AuthController {
     //region Login/signup
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody UserRegisterDTO registerDTO) {
-        if(userRepository.findByEmail(registerDTO.getEmail()).isPresent()) {
-            return ResponseEntity.badRequest().body("Email is already in use");
-        }
-        if(userRepository.findByUsername(registerDTO.getUsername()).isPresent())
-        {
-            return ResponseEntity.badRequest().body("Username is already in user");
+        boolean emailExists = userRepository.findByEmail(registerDTO.getEmail()).isPresent();
+        boolean usernameExists = userRepository.findByUsername(registerDTO.getUsername()).isPresent();
+        if (emailExists || usernameExists) {
+            return ResponseEntity.badRequest().body("Email or Username is already in use");
         }
         User newUser = User.builder()
                 .username(registerDTO.getUsername())
