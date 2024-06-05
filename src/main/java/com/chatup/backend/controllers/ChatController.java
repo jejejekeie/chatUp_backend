@@ -3,6 +3,7 @@ package com.chatup.backend.controllers;
 import com.chatup.backend.dtos.ChatPreviewDTO;
 import com.chatup.backend.dtos.UserDTO;
 import com.chatup.backend.models.*;
+import com.chatup.backend.repositories.ChatRepository;
 import com.chatup.backend.service.ChatService;
 import com.chatup.backend.service.MensajeService;
 import lombok.RequiredArgsConstructor;
@@ -28,6 +29,7 @@ public class ChatController {
     private final MensajeService messageService;
     private final ChatService chatService;
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
+    private final ChatRepository chatRepository;
 
     //region Process Message
     //@PreAuthorize("isAuthenticated()")
@@ -80,7 +82,15 @@ public class ChatController {
     @PostMapping("/newChat")
     public ResponseEntity<?> createChat(@RequestBody ChatCreationRequest request) {
         if (!membersAreValid(request.getMembers())) {
-            return ResponseEntity.badRequest().body("No se puede crear un chat con un solo miembro.");
+            return ResponseEntity.badRequest().body("A chat cannot have only one member.");
+        }
+
+        Optional<String> existingChatId = chatService.getChatId(request.getMembers(), false);
+        if (existingChatId.isPresent()) {
+            Chat existingChat = chatService.findChatById(existingChatId.get());
+            if (existingChat != null && existingChat.getName().equals(request.getChatName())) {
+                return ResponseEntity.badRequest().body("A chat with the same members and name already exists.");
+            }
         }
 
         Chat chat = Chat.builder()

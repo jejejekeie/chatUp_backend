@@ -56,6 +56,10 @@ public class ChatService {
                 });
     }
 
+    public Chat findChatById(String chatId) {
+        return chatRepository.findChatByChatId(chatId).orElse(null);
+    }
+
     public void deleteChat(String chatId) {
         Optional<Chat> chatOptional = chatRepository.findChatByChatId(chatId);
         if (chatOptional.isPresent()) {
