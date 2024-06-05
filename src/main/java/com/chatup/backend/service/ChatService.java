@@ -72,9 +72,12 @@ public class ChatService {
 
     //region Add/Remove Member
     public Chat addUserToChat(String chatId, String userId) {
-        Chat chat = chatRepository.findChatByChatId(chatId).orElseThrow(
-                () -> new IllegalArgumentException("Chat not found" + chatId + " not found")
-        );
+        Chat chat = chatRepository.findChatByChatId(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat not found" + chatId + " not found"));
+
+        userRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));
+
         chat.getMembers().add(userId);
         return chatRepository.save(chat);
     }
@@ -82,6 +85,9 @@ public class ChatService {
     @CacheEvict(value = "chatsByMemberId", key = "#userId")
     public void removeUserFromChat(String chatId, String userId) {
         Chat chat = chatRepository.findChatByChatId(chatId).orElseThrow();
+        if (!chat.getMembers().contains(userId)) {
+            throw new IllegalArgumentException("User " + userId + " not in chat " + chatId);
+        }
         chat.getMembers().remove(userId);
         chatRepository.save(chat);
     }
