@@ -68,7 +68,7 @@ public class ChatService {
     //region Add/Remove Member
     public Chat addUserToChat(String chatId, String userId) {
         Chat chat = chatRepository.findChatByChatId(chatId)
-                .orElseThrow(() -> new IllegalArgumentException("Chat not found" + chatId + " not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Chat not found with ID: " + chatId));
 
         userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found with ID: " + userId));

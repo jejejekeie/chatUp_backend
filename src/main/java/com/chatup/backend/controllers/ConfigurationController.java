@@ -36,6 +36,21 @@ public class ConfigurationController {
         this.gridFsTemplate = gridFsTemplate;
     }
 
+    //region Update/Delete User
+    @PutMapping("/update/{userId}")
+    public ResponseEntity<?> updateUser(
+            @PathVariable String userId,
+            @RequestBody UpdateUserDTO updateUserDTO) {
+        return userRepository.findById(userId)
+                .map(user -> {
+                    updateUserDTO.getUsername().ifPresent(user::setUsername);
+                    updateUserDTO.getEmail().ifPresent(user::setEmail);
+                    userRepository.save(user);
+                    return ResponseEntity.ok("User updated successfully");
+                })
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found with ID: " + userId));
+    }
+
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/delete/{userId}")
     public ResponseEntity<?> deleteUser(@PathVariable String userId) {
@@ -46,6 +61,7 @@ public class ConfigurationController {
                 })
                 .orElse(ResponseEntity.notFound().build());
     }
+    //endregion
 
     @GetMapping("/image/{userId}")
     public ResponseEntity<Resource> getImage(@PathVariable String userId) {
@@ -66,32 +82,19 @@ public class ConfigurationController {
         }
     }
 
-    @PutMapping("/update/{userId}")
-    public ResponseEntity<?> updateUser(
-            @PathVariable String userId,
-            @RequestBody UpdateUserDTO updateUserDTO) {
-        return userRepository.findById(userId)
-                .map(user -> {
-                    updateUserDTO.getUsername().ifPresent(user::setUsername);
-                    updateUserDTO.getEmail().ifPresent(user::setEmail);
-                    userRepository.save(user);
-                    return ResponseEntity.ok("User updated successfully");
-                })
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with ID: " + userId));
-    }
-
     @PutMapping("/uploadImage/{userId}")
-    public ResponseEntity<UploadImageResponseDTO> uploadImage(@PathVariable String userId, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<UploadImageResponseDTO> uploadImage(
+            @PathVariable String userId,
+            @RequestParam("file") MultipartFile file) {
+        if (file.isEmpty()) {
+            return ResponseEntity.badRequest().body(new UploadImageResponseDTO("File is empty", null));
+        }
         try {
-            if (!file.isEmpty()) {
-                String fileId = imageService.storeOrUpdateImage(userId, file);
-                return ResponseEntity.ok(new UploadImageResponseDTO("Image uploaded successfully", fileId));
-            } else {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new UploadImageResponseDTO("File is empty", null));
-            }
+            String fileId = imageService.storeOrUpdateImage(userId, file);
+            return ResponseEntity.ok(new UploadImageResponseDTO("Image uploaded successfully", fileId));
         } catch (IOException e) {
             logger.error("Error uploading image for user {}", userId, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new UploadImageResponseDTO("Error uploading image", null));
         }
     }
 
