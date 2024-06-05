@@ -17,6 +17,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
@@ -112,25 +113,20 @@ public class AuthController {
     @PostMapping("/refresh-token")
     public ResponseEntity<?> refreshToken(HttpServletRequest request) {
         String authorizationHeader = request.getHeader("Authorization");
-        String token = null;
-        String username = null;
-
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            token = authorizationHeader.substring(7);
+            String token = authorizationHeader.substring(7);
             try {
-                username = jwtTokenUtil.extractUsername(token);
+                String username = jwtTokenUtil.extractUsername(token);
+                UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+                if (jwtTokenUtil.validateToken(token, userDetails)) {
+                    String newToken = jwtTokenUtil.generateToken(userDetails);
+                    return ResponseEntity.ok(new AuthenticationResponse(newToken, userRepository.findByEmail(username)
+                            .orElseThrow(() -> new UsernameNotFoundException("User not found")).getId()));
+                }
             } catch (Exception e) {
                 return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid token");
             }
         }
-
-        if (token != null && username != null) {
-            UserDetails userDetails = userDetailsService.loadUserByUsername(username);
-            if (jwtTokenUtil.validateToken(token, userDetails)) {
-                String newToken = jwtTokenUtil.generateToken(userDetails);
-                return ResponseEntity.ok(new AuthenticationResponse(newToken, userRepository.findByEmail(username).get().getId()));
-            }
-        }
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Cannot refresh token");
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Authorization header is missing or invalid");
     }
 }
