@@ -58,6 +58,12 @@ public class PasswordResetService {
     }
 
     public void invalidate(String token) {
-        passwordResetTokenRepository.deleteByToken(token);
+        Optional<PasswordResetToken> tokenOpt = passwordResetTokenRepository.findByToken(token);
+        if (tokenOpt.isPresent()) {
+            PasswordResetToken prt = tokenOpt.get();
+            prt.setExpirationDate(new Date());
+            passwordResetTokenRepository.save(prt);
+            passwordResetTokenRepository.delete(prt);
+        }
     }
 }
