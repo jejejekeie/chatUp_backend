@@ -25,7 +25,6 @@ public class ChatService {
         this.chatRepository = chatRepository;
         this.userRepository = userRepository;
         this.messageService = messageService;
-
     }
 
     //region Create/Delete Chat
@@ -54,10 +53,6 @@ public class ChatService {
                     }
                     return Optional.empty();
                 });
-    }
-
-    public Chat findChatById(String chatId) {
-        return chatRepository.findChatByChatId(chatId).orElse(null);
     }
 
     public void deleteChat(String chatId) {
@@ -117,9 +112,6 @@ public class ChatService {
         return chatRepository.findChatsByMemberId(memberId);
     }
 
-    public Optional<Chat> getChatById(String chatId) {
-        return chatRepository.findChatByChatId(chatId);
-    }
     //endregion
 
     public List<ChatPreviewDTO> getChatPreviews(String userId) {
@@ -136,4 +128,11 @@ public class ChatService {
         }
         return chatPreviews;
     }
+
+    //region Helpers
+    public Chat getChatOrThrow(String chatId) {
+        return chatRepository.findById(chatId)
+                .orElseThrow(() -> new IllegalArgumentException("Chat not found with ID: " + chatId));
+    }
+    //endregion
 }

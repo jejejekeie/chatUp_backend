@@ -3,7 +3,6 @@ package com.chatup.backend.controllers;
 import com.chatup.backend.dtos.ChatPreviewDTO;
 import com.chatup.backend.dtos.UserDTO;
 import com.chatup.backend.models.*;
-import com.chatup.backend.repositories.ChatRepository;
 import com.chatup.backend.service.ChatService;
 import com.chatup.backend.service.MensajeService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,6 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -29,15 +27,12 @@ public class ChatController {
     private final MensajeService messageService;
     private final ChatService chatService;
     private static final Logger logger = LoggerFactory.getLogger(ChatController.class);
-    private final ChatRepository chatRepository;
 
     //region Process Message
     //@PreAuthorize("isAuthenticated()")
     @MessageMapping("/processMessage")
     public void processMessage(Mensaje chatMensaje) {
-        logger.info("Received message: {}", chatMensaje);
         Mensaje msjGuardado = messageService.save(chatMensaje);
-        logger.info("Saved message: {}", msjGuardado);
         messagingTemplate.convertAndSendToUser(
                 chatMensaje.getSender(), "/queue/messages",
                 msjGuardado
@@ -48,9 +43,7 @@ public class ChatController {
     //@PreAuthorize("isAuthenticated()")
     @MessageMapping("processMessage/{chatId}")
     public void processMessage(@DestinationVariable String chatId, Mensaje chatMensaje) {
-        logger.info("Received message for chatId {}: {}", chatId, chatMensaje);
         chatMensaje.setChatId(chatId);
-        logger.info("Saved message: {}", chatMensaje);
         Mensaje msjGuardado = messageService.save(chatMensaje);
         messagingTemplate.convertAndSend("/topic/chat/" + chatId, msjGuardado);
         logger.info("Message sent to topic /topic/chat/{}: {}", chatId, msjGuardado);
@@ -87,7 +80,7 @@ public class ChatController {
 
         Optional<String> existingChatId = chatService.getChatId(request.getMembers(), false);
         if (existingChatId.isPresent()) {
-            Chat existingChat = chatService.findChatById(existingChatId.get());
+            Chat existingChat = chatService.getChatOrThrow(existingChatId.get());
             if (existingChat != null && existingChat.getName().equals(request.getChatName())) {
                 return ResponseEntity.badRequest().body("A chat with the same members and name already exists.");
             }
@@ -131,7 +124,7 @@ public class ChatController {
         if (userId == null || userId.isEmpty()) {
             return ResponseEntity.badRequest().body(null);
         }
-        return ResponseEntity.ok(chatService.addUserToChat(chatId, userId));
+        return ResponseEntity.ok().body(chatService.addUserToChat(chatId, userId));
     }
 
     @PreAuthorize("isAuthenticated()")
@@ -142,7 +135,7 @@ public class ChatController {
     ) {
         try {
             chatService.removeUserFromChat(chatId, userId);
-            return ResponseEntity.ok("User removed sucessfully.");
+            return ResponseEntity.ok("User removed successfully.");
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User or chat not found");
         }
@@ -181,8 +174,12 @@ public class ChatController {
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{chatId}/details")
     public ResponseEntity<Chat> getChatDetails(@PathVariable String chatId) {
-        Optional<Chat> chat = chatService.getChatById(chatId);
-        return chat.map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).build());
+        try {
+            Chat chat = chatService.getChatOrThrow(chatId);
+            return ResponseEntity.ok(chat);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 
     @PreAuthorize("isAuthenticated()")
