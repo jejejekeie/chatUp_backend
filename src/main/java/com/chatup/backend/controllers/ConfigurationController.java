@@ -76,18 +76,8 @@ public class ConfigurationController {
         }
 
         try {
-            GridFSFile gridFSFile = gridFsTemplate.findOne(new Query(Criteria.where("filename").is(userId)));
-            if (gridFSFile == null || gridFSFile.getMetadata() == null) {
-                logger.warn("No metadata found for user ID: {}", userId);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-            }
-
+            GridFSFile gridFSFile = gridFsTemplate.findOne(new Query(Criteria.where("metadata.userId").is(userId)));
             String contentType = gridFSFile.getMetadata().getString("contentType");
-            if (contentType == null) {
-                logger.warn("No content type found for user ID: {}", userId);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-            }
-
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
                     .body(fileResource);

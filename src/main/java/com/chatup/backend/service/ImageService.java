@@ -17,6 +17,7 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.Objects;
 
 @Service
 public class ImageService {
@@ -38,7 +39,8 @@ public class ImageService {
         ByteArrayInputStream is = new ByteArrayInputStream(os.toByteArray());
 
         gridFsTemplate.delete(new Query(Criteria.where("metadata.userId").is(userId)));
-        String extension = file.getContentType().split("/")[1];
+
+        String extension = Objects.requireNonNull(file.getContentType()).split("/")[1];
         String filename = userId + "." + extension;
 
         DBObject metadata = new BasicDBObject();
