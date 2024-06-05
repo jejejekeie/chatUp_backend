@@ -48,8 +48,13 @@ public class ImageService {
 
     private BufferedImage resizeImage(MultipartFile file) throws IOException {
         BufferedImage originalImage = ImageIO.read(file.getInputStream());
-        BufferedImage resizedImage = new BufferedImage(200, 200, BufferedImage.TYPE_INT_RGB);
-        resizedImage.getGraphics().drawImage(originalImage, 0, 0, 300, 300, null);
+        int width = originalImage.getWidth();
+        int height = originalImage.getHeight();
+        int newWidth = 300;
+        int newHeight = (height * newWidth) / width;
+
+        BufferedImage resizedImage = new BufferedImage(newWidth, newHeight, BufferedImage.TYPE_INT_RGB);
+        resizedImage.getGraphics().drawImage(originalImage, 0, 0, newWidth, newHeight, null);
         return resizedImage;
     }
 
