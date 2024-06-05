@@ -59,7 +59,10 @@ public class ConfigurationController {
                     userRepository.delete(user);
                     return ResponseEntity.ok("User deleted successfully");
                 })
-                .orElse(ResponseEntity.notFound().build());
+                .orElseGet(() -> {
+                    logger.warn("Attempted to delete non-existing user with ID {}", userId);
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found with ID: " + userId);
+                });
     }
     //endregion
 
@@ -73,7 +76,7 @@ public class ConfigurationController {
         }
 
         try {
-            String contentType = getResourceContentType(userId);
+            String contentType = fileResource.getURL().openConnection().getContentType();
             return ResponseEntity.ok()
                     .contentType(MediaType.parseMediaType(contentType))
                     .body(fileResource);
@@ -91,7 +94,7 @@ public class ConfigurationController {
             return ResponseEntity.badRequest().body(new UploadImageResponseDTO("File is empty", null));
         }
         try {
-            imageService.storeOrUpdateImage(userId, file);
+            String fileId = imageService.storeOrUpdateImage(userId, file);
             return ResponseEntity.ok(new UploadImageResponseDTO("Image uploaded successfully", userId));
         } catch (IOException e) {
             logger.error("Error uploading image for user {}", userId, e);
