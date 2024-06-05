@@ -47,6 +47,10 @@ public class AuthController {
         if(userRepository.findByEmail(registerDTO.getEmail()).isPresent()) {
             return ResponseEntity.badRequest().body("Email is already in use");
         }
+        if(userRepository.findByUsername(registerDTO.getUsername()).isPresent())
+        {
+            return ResponseEntity.badRequest().body("Username is already in user");
+        }
         User newUser = User.builder()
                 .username(registerDTO.getUsername())
                 .email(registerDTO.getEmail())

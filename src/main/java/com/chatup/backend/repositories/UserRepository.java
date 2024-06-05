@@ -13,6 +13,7 @@ import java.util.Set;
 @Repository
 public interface UserRepository extends MongoRepository<User, String> {
     Optional<User> findByEmail(String email);
+    Optional<User> findByUsername(String username);
     @NonNull
     @Override
     Optional<User> findById(@NonNull String userId);
