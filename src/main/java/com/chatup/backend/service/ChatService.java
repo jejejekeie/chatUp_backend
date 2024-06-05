@@ -33,26 +33,16 @@ public class ChatService {
         return chatRepository.save(chat);
     }
 
+    /*
     private String createChatId(Set<String> members) {
         List<String> sortedMembers = new ArrayList<>(members);
         Collections.sort(sortedMembers);
         return String.join("-", sortedMembers);
     }
+    */
 
-    public Optional<String> getChatId (
-            Set<String> members,
-            boolean createNewChatIfNotExists
-    ) {
-        return chatRepository
-                .findChatByMembers(members)
-                .map(Chat::getChatId)
-                .or(() -> {
-                    if (createNewChatIfNotExists) {
-                        var chatId = createChatId(members);
-                        return Optional.of(chatId);
-                    }
-                    return Optional.empty();
-                });
+    public Optional<Chat> findChatByMembersAndName(Set<String> members, String chatName) {
+        return chatRepository.findChatByMembersAndName(members, chatName);
     }
 
     public void deleteChat(String chatId) {

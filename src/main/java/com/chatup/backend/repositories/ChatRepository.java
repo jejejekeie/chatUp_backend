@@ -15,4 +15,6 @@ public interface ChatRepository extends MongoRepository<Chat, String> {
     List<Chat> findChatsByMemberId(String memberId);
     List<Chat> findChatsByName(String chatName);
     void deleteByChatId(String chatId);
+    @Query("{'members': ?0, 'name': ?1}")
+    Optional<Chat> findChatByMembersAndName(Set<String> members, String chatName);
 }

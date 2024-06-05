@@ -78,12 +78,9 @@ public class ChatController {
             return ResponseEntity.badRequest().body("A chat cannot have only one member.");
         }
 
-        Optional<String> existingChatId = chatService.getChatId(request.getMembers(), false);
-        if (existingChatId.isPresent()) {
-            Chat existingChat = chatService.getChatOrThrow(existingChatId.get());
-            if (existingChat != null && existingChat.getName().equals(request.getChatName())) {
-                return ResponseEntity.badRequest().body("A chat with the same members and name already exists.");
-            }
+        Optional<Chat> existingChat = chatService.findChatByMembersAndName(request.getMembers(), request.getChatName());
+        if (existingChat.isPresent()) {
+            return ResponseEntity.badRequest().body("A chat with the same members and name already exists.");
         }
 
         Chat chat = Chat.builder()
