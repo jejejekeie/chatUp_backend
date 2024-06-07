@@ -1,10 +1,12 @@
 package com.chatup.backend.service;
 
+import com.chatup.backend.repositories.UserRepository;
 import com.mongodb.BasicDBObject;
 import com.mongodb.DBObject;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.gridfs.GridFsTemplate;
+import com.chatup.backend.models.User;
 import org.springframework.stereotype.Service;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -22,10 +24,12 @@ import java.util.Objects;
 @Service
 public class ImageService {
     private final GridFsTemplate gridFsTemplate;
+    private final UserRepository userRepository;
 
     @Autowired
-    public ImageService(GridFsTemplate gridFsTemplate) {
+    public ImageService(GridFsTemplate gridFsTemplate, UserRepository userRepository) {
         this.gridFsTemplate = gridFsTemplate;
+        this.userRepository = userRepository;
     }
 
     public String storeOrUpdateImage(String userId, MultipartFile file) throws IOException {
@@ -48,6 +52,11 @@ public class ImageService {
         metadata.put("contentType", file.getContentType());
 
         ObjectId fileId = gridFsTemplate.store(is, filename, metadata);
+
+        User user = userRepository.findById(userId).orElseThrow(() -> new RuntimeException("User not found"));
+        user.setFotoPerfil("/api/configuration/image/" + userId);
+        userRepository.save(user);
+
         return fileId.toString();
     }
 
@@ -68,5 +77,4 @@ public class ImageService {
         if (file == null) return null;
         return gridFsTemplate.getResource(file);
     }
-
 }

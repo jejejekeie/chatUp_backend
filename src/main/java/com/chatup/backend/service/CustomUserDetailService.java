@@ -21,12 +21,11 @@ public class CustomUserDetailService implements UserDetailsService {
         if(userRepository.findByEmail(email).isEmpty()) {
             throw new UsernameNotFoundException("User not found");
         } else {
-            String authorities = "USER";
             User user = userRepository.findByEmail(email).get();
             return org.springframework.security.core.userdetails.User.builder()
                     .username(user.getEmail())
                     .password(user.getHashPassword())
-                    .roles(authorities)
+                    .authorities(user.getRole().stream().map(Enum::name).toArray(String[]::new))
                     .build();
         }
     }

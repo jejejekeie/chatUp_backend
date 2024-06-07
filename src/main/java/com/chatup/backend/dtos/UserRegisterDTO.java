@@ -16,4 +16,5 @@ public class UserRegisterDTO {
     @Indexed(unique = true)
     private String email;
     private String password;
+    private String adminCode;
 }

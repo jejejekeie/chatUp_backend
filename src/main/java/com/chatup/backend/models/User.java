@@ -23,9 +23,8 @@ public class User {
     private String authorities;
     private String fotoPerfil;
     private String status;
+    private Set<UserRoles> role;
     private Date lastAccess;
-    private Set<String> contacts = new HashSet<>();
-    private String fcmToken;
 
     public User(User user) {
         this.username = user.username;
@@ -35,7 +34,11 @@ public class User {
         this.fotoPerfil = user.fotoPerfil;
         this.status = user.status;
         this.lastAccess = user.lastAccess;
-        this.contacts = new HashSet<>(user.contacts);
-        this.fcmToken = user.fcmToken;
+        this.role = new HashSet<>();
+    }
+
+    public enum UserRoles {
+        USER,
+        ADMIN
     }
 }

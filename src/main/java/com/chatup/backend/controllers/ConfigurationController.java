@@ -91,8 +91,8 @@ public class ConfigurationController {
     public ResponseEntity<UploadImageResponseDTO> uploadImage(
             @PathVariable String userId,
             @RequestParam("file") MultipartFile file) {
-        if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body(new UploadImageResponseDTO("File is empty", null));
+        if (file.isEmpty() || !isImage(file)) {
+            return ResponseEntity.badRequest().body(new UploadImageResponseDTO("Invalid image file", null));
         }
         try {
             String fileId = imageService.storeOrUpdateImage(userId, file);
@@ -101,6 +101,11 @@ public class ConfigurationController {
             logger.error("Error uploading image for user {}", userId, e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new UploadImageResponseDTO("Error uploading image", null));
         }
+    }
+
+    private boolean isImage(MultipartFile file) {
+        String mimeType = file.getContentType();
+        return mimeType != null && mimeType.startsWith("image/");
     }
 
     public String getResourceContentType(String userId) {

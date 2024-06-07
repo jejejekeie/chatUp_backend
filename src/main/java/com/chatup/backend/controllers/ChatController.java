@@ -186,12 +186,16 @@ public class ChatController {
 
     @PreAuthorize("isAuthenticated()")
     @GetMapping("/{chatId}/members")
-    public ResponseEntity<List<UserDTO>> getChatMembers(@PathVariable String chatId) {
-        List<UserDTO> members = chatService.getChatMembers(chatId);
-        if (members != null) {
-            return ResponseEntity.ok(members);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+    public ResponseEntity<?> getChatMembers(@PathVariable String chatId) {
+        try {
+            List<UserDTO> members = chatService.getChatMembers(chatId);
+            if (!members.isEmpty()) {
+                return ResponseEntity.ok(members);
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+            }
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
     //endregion

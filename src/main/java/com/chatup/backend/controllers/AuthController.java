@@ -10,6 +10,8 @@ import com.chatup.backend.models.User;
 import com.chatup.backend.service.CustomUserDetailService;
 import com.chatup.backend.service.PasswordResetService;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,9 +23,13 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
+    private static final String ADMIN_REGISTRATION_CODE = "SecretAdminCode123";
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
@@ -31,6 +37,7 @@ public class AuthController {
     private final CustomUserDetailService userDetailsService;
     private final JwtUtil jwtTokenUtil;
     private final PasswordResetService passwordResetService;
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
 
     @Autowired
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository, PasswordEncoder passwordEncoder, CustomUserDetailService userDetailsService, JwtUtil jwtTokenUtil, PasswordResetService passwordResetService) {
@@ -45,16 +52,31 @@ public class AuthController {
     //region Login/signup
     @PostMapping("/signup")
     public ResponseEntity<?> registerUser(@RequestBody UserRegisterDTO registerDTO) {
+        if (registerDTO.getUsername() == null || registerDTO.getEmail() == null || registerDTO.getPassword() == null) {
+            return ResponseEntity.badRequest().body("Missing required fields");
+        }
         boolean emailExists = userRepository.findByEmail(registerDTO.getEmail()).isPresent();
         boolean usernameExists = userRepository.findByUsername(registerDTO.getUsername()).isPresent();
         if (emailExists || usernameExists) {
             return ResponseEntity.badRequest().body("Email or Username is already in use");
         }
+
         User newUser = User.builder()
                 .username(registerDTO.getUsername())
                 .email(registerDTO.getEmail())
                 .hashPassword(passwordEncoder.encode(registerDTO.getPassword()))
+                .role(Collections.singleton(
+                        Optional.ofNullable(registerDTO.getAdminCode())
+                                .map(String::trim)
+                                .filter(code -> code.equals(ADMIN_REGISTRATION_CODE))
+                                .map(code -> User.UserRoles.ADMIN)
+                                .orElse(User.UserRoles.USER)
+                ))
                 .build();
+        logger.info("Registering user with username: {}, email: {}", registerDTO.getUsername(), registerDTO.getEmail());
+        logger.info("Received admin code: '{}'", registerDTO.getAdminCode());
+        logger.info("Assigned roles: {}", newUser.getRole().toString());
+
         userRepository.save(newUser);
 
         return ResponseEntity.ok("User registered successfully");
@@ -69,6 +91,10 @@ public class AuthController {
             final UserDetails userDetails = userDetailsService
                     .loadUserByUsername(authenticationRequest.getEmail());
 
+            User user = userRepository.findByEmail(authenticationRequest.getEmail()).get();
+            user.setStatus("ACTIVE");
+            userRepository.save(user);
+
             final String jwt = jwtTokenUtil.generateToken(userDetails);
             final String userId = userRepository.findByEmail(authenticationRequest.getEmail()).get().getId();
 
@@ -76,6 +102,20 @@ public class AuthController {
         } catch (BadCredentialsException e) {
             throw new Exception("Incorrect username or password", e);
         }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logoutUser(@RequestHeader("Authorization") String token) {
+        String username = jwtTokenUtil.extractUsername(token.substring(7));
+        User user = userRepository.findByEmail(username).orElse(null);
+
+        if (user != null) {
+            user.setStatus("INACTIVE");
+            userRepository.save(user);
+            return ResponseEntity.ok("Logout successful");
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
     }
     //endregion
 

@@ -33,15 +33,13 @@ public class ChatService {
         return chatRepository.save(chat);
     }
 
-    /*
-    private String createChatId(Set<String> members) {
-        List<String> sortedMembers = new ArrayList<>(members);
-        Collections.sort(sortedMembers);
-        return String.join("-", sortedMembers);
-    }
-    */
-
     public Optional<Chat> findChatByMembersAndName(Set<String> members, String chatName) {
+        if (members == null || members.isEmpty()) {
+            throw new IllegalArgumentException("Members cannot be null or empty");
+        }
+        if (chatName == null || chatName.isEmpty()) {
+            throw new IllegalArgumentException("Chat name cannot be null or empty");
+        }
         return chatRepository.findChatByMembersAndName(members, chatName);
     }
 
@@ -81,34 +79,52 @@ public class ChatService {
     }
     //endregion
 
-    public List<UserDTO> getChatMembers(String chatId) {
-        Set<String> members = chatRepository.findChatByChatId(chatId).orElseThrow().getMembers();
-        List<User> users = userRepository.findUsersByIds(members);
-        return users.stream()
-                .map(user -> UserDTO.builder()
-                        .id(user.getId())
-                        .username(user.getUsername())
-                        .email(user.getEmail())
-                        .fotoPerfil(user.getFotoPerfil())
-                        .status(user.getStatus())
-                        .build())
-                .collect(Collectors.toList());
-    }
-
     //region Get Chats
     public List<Chat> findChatsByName(String chatName) {
+        if (chatName == null || chatName.isEmpty()) {
+            throw new IllegalArgumentException("Chat name cannot be null or empty");
+        }
         return chatRepository.findChatsByName(chatName);
     }
 
     @Cacheable(value = "chatsByMemberId", key = "#memberId")
     public List<Chat> getChatsByMemberId(String memberId) {
+        if (memberId == null || memberId.isEmpty()) {
+            throw new IllegalArgumentException("Member ID cannot be null or empty");
+        }
         return chatRepository.findChatsByMemberId(memberId);
     }
 
-    //endregion
+    public List<UserDTO> getChatMembers(String chatId) {
+        if (chatId == null || chatId.isEmpty()) {
+            throw new IllegalArgumentException("Chat ID cannot be null or empty");
+        }
+
+        Set<String> members = chatRepository.findChatByChatId(chatId).orElseThrow().getMembers();
+        if (members.isEmpty()) {
+            throw new IllegalArgumentException("No members found for the chat with ID: " + chatId);
+        }
+
+        List<User> users = userRepository.findUsersByIds(members);
+        if (users.isEmpty()) {
+            throw new IllegalArgumentException("No users found for the members in the chat with ID: " + chatId);
+        }
+
+        return users.stream()
+                .map(user -> new UserDTO(user.getId(), user.getUsername(), user.getEmail(), user.getFotoPerfil(), user.getStatus(), null)) // Assuming you have a suitable constructor
+                .collect(Collectors.toList());
+    }
 
     public List<ChatPreviewDTO> getChatPreviews(String userId) {
+        if (userId == null || userId.isEmpty()) {
+            throw new IllegalArgumentException("User ID cannot be null or empty");
+        }
+
         List<Chat> chats = chatRepository.findChatsByMemberId(userId);
+        if (chats.isEmpty()) {
+            throw new IllegalArgumentException("No chats found for the user with ID: " + userId);
+        }
+
         List<ChatPreviewDTO> chatPreviews = new ArrayList<>();
         for (Chat chat : chats) {
             Mensaje lastMessage = messageService.findLastMessageByChatId(chat.getChatId());
@@ -121,6 +137,7 @@ public class ChatService {
         }
         return chatPreviews;
     }
+    //endregion
 
     //region Helpers
     public Chat getChatOrThrow(String chatId) {
