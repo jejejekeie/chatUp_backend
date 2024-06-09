@@ -141,7 +141,7 @@ public class ChatService {
 
     //region Helpers
     public Chat getChatOrThrow(String chatId) {
-        return chatRepository.findById(chatId)
+        return chatRepository.findChatByChatId(chatId)
                 .orElseThrow(() -> new IllegalArgumentException("Chat not found with ID: " + chatId));
     }
     //endregion

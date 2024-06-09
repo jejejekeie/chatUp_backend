@@ -13,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,7 +30,9 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/auth")
 public class AuthController {
-    private static final String ADMIN_REGISTRATION_CODE = "SecretAdminCode123";
+
+    @Value("${admin.access.code}")
+    private String adminAccessCode;
 
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
@@ -68,7 +71,7 @@ public class AuthController {
                 .role(Collections.singleton(
                         Optional.ofNullable(registerDTO.getAdminCode())
                                 .map(String::trim)
-                                .filter(code -> code.equals(ADMIN_REGISTRATION_CODE))
+                                .filter(code -> code.equals(adminAccessCode))
                                 .map(code -> User.UserRoles.ADMIN)
                                 .orElse(User.UserRoles.USER)
                 ))
